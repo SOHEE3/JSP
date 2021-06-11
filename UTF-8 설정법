@@ -1,0 +1,152 @@
+[ajaxTest.jsp](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/071567dd-6269-41f4-bb93-529f0092b35b/ajaxTest.jsp)
+
+[xml.jsp](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e20c25fb-033b-4569-8a57-1ce009c6d38f/xml.jsp)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/93482d5a-026d-4c13-81df-4615849808fe/XmlHttpRequest_status_.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/93482d5a-026d-4c13-81df-4615849808fe/XmlHttpRequest_status_.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2fad9a9f-d75e-49c1-839b-30ed88c7c503/UTF8_.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2fad9a9f-d75e-49c1-839b-30ed88c7c503/UTF8_.png)
+
+```java
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<script type="text/javascript"> 
+	//getXMLHttpRequest()함수로 생성한 객체를 저장하기 위해 선언한 전역 변수 
+	var httpRequest = null; 
+	function getXMLHttpRequest() 
+	{ 
+		//브라우저가 IE일 경우 XMLHttpRequest 객체 구하기 
+		if (window.ActiveXObject) 
+		{ 
+			//Msxml2.XMLHTTP가 신버전이어서 먼저 시도 
+			try { 
+					return new ActiveXObject("Msxml2.XMLHTTP"); 
+			} 
+			catch(e) 
+			{ 
+				try 
+				{ 
+					return new ActiveXObject("Microsoft.XMLHTTP"); 
+				} 
+				catch(e1) 
+				{ return null; } 
+			} 
+		}
+			//IE 외 파이어폭스 오페라 같은 브라우저에서 XMLHttpRequest 객체 구하기 } 
+		else if (window.XMLHttpRequest) 
+		{ 
+				return new XMLHttpRequest(); 
+		}
+		else 
+		{ return null; } 
+		
+	}
+	var httpRequest = null; 
+
+	
+	function processEvent()
+	{ 
+		httpRequest = getXMLHttpRequest(); 
+		httpRequest.onreadystatechange = callbackFunction; 
+		httpRequest.open("GET","./xml.jsp",true); 
+		httpRequest.send(null) 
+	} 
+	function callbackFunction()
+	{ 
+		//서버로부터 응답이 왔으므로 알맞은 작업을 수행 
+		if (httpRequest.readyState == 4) 
+		{ 
+			if (httpRequest.status == 200) 
+			{ 
+				//alert(httpRequest.responseText);
+				var data = httpRequest.responseXML;
+				
+				var nameTags = data.getElementsByTagName("name");
+				
+				var nameTitle = nameTags[0].childNodes[0].nodeValue;
+				
+				alert(nameTitle);
+			} 
+			else { alert("실패: "+httpRequest.status); } 
+		}
+
+	}
+
+	
+</script>
+
+<!-- 
+switch (httpRequest.readyState) {
+
+    case XMLHttpRequest.UNSET:
+
+        currentState += "현재 XMLHttpRequest 객체의 상태는 UNSET 입니다.<br>";
+
+        break;
+
+    case XMLHttpRequest.OPENED:
+
+        currentState += "현재 XMLHttpRequest 객체의 상태는 OPENED 입니다.<br>";
+
+        break;
+
+    case XMLHttpRequest.HEADERS_RECIEVED:
+
+        currentState += "현재 XMLHttpRequest 객체의 상태는 HEADERS_RECEIVED 입니다.<br>";
+
+        break;
+
+    case XMLHttpRequest.LOADING:
+
+        currentState += "현재 XMLHttpRequest 객체의 상태는 LOADING 입니다.<br>";
+
+        break;
+
+    case XMLHttpRequest.DONE:
+
+        currentState += "현재 XMLHttpRequest 객체의 상태는 DONE 입니다.<br>";
+
+        break;
+
+}
+
+document.getElementById("status").innerHTML = currentState;
+
+if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200 ) {
+
+    document.getElementById("text").innerHTML = httpRequest.responseText;
+
+}
+-->
+
+</head>
+<body>
+	<input type="button" value="확인" onclick="processEvent()"/>
+</body>
+</html>
+```
+
+```java
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.io.PrintWriter" %>
+<%
+	request.setCharacterEncoding("utf-8");
+	response.setContentType("text/xml; charset=utf-8");
+	PrintWriter writer = response.getWriter();
+	
+	String result = "<?xml version='1.0' encoding='UTF-8'?><name>이지완</name>";
+	
+	writer.print(result);
+%>
+```
+
+1.Window - Preferences - General - Workspace - Text file encoding >UTF-8로 변경
+2.Window - Preferences - General - Editors - Text Editors - Speling>Encoding>UTF-8로 변경
+3.Window - Preferences - Web - CSS Files/HTML Files/JSP Files>Encoding>UTF-8로 변경
+4.Window - Preferences - General - Content Types>Content types>Java Class File>Default encoding>UTF-8로 변경
