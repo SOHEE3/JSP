@@ -1,0 +1,1062 @@
+# Ajax(Asynchronous Javascript and XML)
+
+> 비동기 통신. 클라이언트 - 서버 간에 XML 또는 JSON 데이터를 주고 받는 기술
+
+클라이언트가 서버쪽으로 요청하면 request
+반대 response
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8a17a868-49bc-4598-a07d-cf52d56c36ea/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8a17a868-49bc-4598-a07d-cf52d56c36ea/Untitled.png)
+
+아이디 생성 중복 체크 - db 연동 
+
+```java
+<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
+<%@ page import ="java.sql.*"%>    
+<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"  />  
+  
+<%
+
+	String strUserID = request.getParameter("userID");
+	String strUserPass = request.getParameter("userPass");
+	String strUserName = request.getParameter("userName");
+	String strUserYear = request.getParameter("userYear");
+	String strUserMonth = request.getParameter("userMonth");
+	String strUserDay = request.getParameter("userDay");
+	String strUserGender = request.getParameter("userGender");
+	String[] strUserIntrs = request.getParameterValues("userIntr"); //체크박스/다중 입력 처리할 때 배열을 이용한다.
+	String strUserPhone = request.getParameter("userPhone")
+	
+	
+		**String[] dbInfos = new String[3];
+		dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+		dbInfos[1] = "scoredb";
+		dbInfos[2] = "1";
+
+		DBConn.setDBInfo(dbInfos);
+		
+	//회원아이디 중복체크
+	String strProc_Chk= "{call PKG_MEMBER.PROC_CHK_USERID(?,?)}";
+	String[] strParams_Chk = new String[1];
+	strParams_Chk[0] = strUserID;
+	
+	ResultSet rs = DBConn.getResultSet(strProc_Chk, strParams_Chk); 
+	rs.next();
+	
+	String strResult = rs.getString("RST");
+	
+	String isYN = "Y"; // ㄷㅇ
+	if(strResult.equals(isYN)){ // 중복  // -----
+		
+		//중복이라는 사실을 알려줘야한다 클라이언트에게 
+		//out.print(" 아이디 중복입니다. ");
+		response.sendRedirect("./memberJoin.jsp");
+		
+	} // if(strResult == "Y"){
+	else{
+	
+			//아래쪽 코딩은 데이터베이스에 데이터를 저장
+			//m,f
+			String strUserIntr = "";
+			
+			// strUserIntr = M, F
+					//M, F,
+			
+			int len = strUserIntrs.length;
+			for(int i=0;i<len ;i++){
+				
+				strUserIntr += strUserIntrs[i]; // m,f,e
+				//strUserIntr += strUserIntrs[i] +",";
+				
+				if(i != len - 1){
+					strUserIntr += ",";
+				}
+			}
+	
+			
+			
+					
+			String strProc = "{call PKG_MEMBER.PROC_MEMBER_INS(?,?,?,?,?,?,?)}";
+			
+			String[] strParams = new String[7];
+			strParams[0] = strUserID;
+			strParams[1] = strUserPass;
+			strParams[2] = strUserName;
+			strParams[3] = strUserGender;
+			strParams[4] = strUserYear + "-" + strUserMonth + "-" + strUserDay;
+			strParams[5] = strUserIntr;
+			strParams[6] = strUserPhone;
+			
+			DBConn.executeQuery(strProc,strParams);
+			DBConn.setClose(); // Connection 객체를 닫고, null;
+			
+		//	response.sendRedirect("suc.jsp");
+		
+	} //else{ // 아니라면 전부실행 
+	
+%>**
+```
+
+```java
+<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+</head>
+
+  <title>회원관리폼</title>
+
+	<link rel="stylesheet" href="../CSS/member.css">
+	<script src="../JS/mem.js"></script>
+
+ </head>
+ <body>
+	<div id="wrap">
+		<form name="memberForm" id="memberForm" action="./memberJoin_ok.jsp" method="post">
+			
+			<!-- 아이디 -->
+			<div class="line">
+				<span class="row1">아이디</span>
+				<span class="row2">				
+					<span class="col1">
+						<input type="text" name="userID" id="userID" class="textbox1"
+						 onblur="chkValue('userID','idMsg');"/>
+					</span>
+					<span class="col2">
+						@naver.com
+					</span>				
+				</span>
+				<span id="idMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1">비밀번호</span>
+				<span class="row2">
+					<input type="text" name="userPass" id="userPass" class="textbox1"
+					style="width:396px;"
+					onblur="chkValue('userPass','passMsg');chkPass();"
+					/>
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+			
+				<span class="row1">비밀번호확인</span>
+				<span class="row2">
+					<input type="text" name="userPass_Re" id="userPass_Re" class="textbox1"
+					style="width:396px;"
+					onblur="chkValue('userPass_Re','passMsg_Re');chkPass();"
+					/>
+				</span>
+				<span id="passMsg_Re" class="msg"></span>
+			</div>
+
+			<div style="height:30px;"></div>
+
+			<div class="line">
+				<span class="row1">이름</span>
+				<span class="row2">
+					<input type="text" name="userName" id="userName" class="textbox1"
+					style="width:396px;"/>
+				</span>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1">생년월일</span>
+				<span id="userBirth">
+					<span class="row2" >
+						<input type="text" name="userYear" id="userYear" class="textbox1"
+						style="width:120px;" placeholder="년(4자)"/>
+					</span>
+					<span class="empty"></span>
+					<span class="row2" >
+						<select id="userMonth" name="userMonth">
+						
+							<% // option 으로 12월 설정하기
+							
+								String strHTML = "";
+								for(int i=1 ; i<=12 ;i++){
+									strHTML += "<option value='" + i + "'>" + i +"</option>";
+									
+								}						
+			
+							%>
+							<%= strHTML %>
+						
+				
+							<option value="">월</option>
+
+						</select>
+					</span>
+					<span class="empty"></span>
+					<span class="row2" >
+						<input type="text" name="userDay" id="userDay" class="textbox1"
+						style="width:120px;" placeholder="일"/>
+					</span>
+				</span>
+				<span id="birthMsg" class="msg"></span>
+			</div>
+
+			<div class="line" id="">
+				<span class="row1">성별</span>
+				<span class="row2">
+					<label>
+						<input type="radio" id="userGender1" name="userGender" value="M" class="gender"/> <span class="rtxt">남자</span>
+					</label>
+					<label>
+						<input type="radio" id="userGender2" name="userGender" value="F" class="gender"/> <span class="rtxt">여자</span>
+					</label>
+					<label>
+						<input type="radio" id="userGender3" name="userGender" value="E" class="gender"/> <span class="rtxt">선택안함</span>
+					</label>
+					
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line" id="">
+				<span class="row1">관심사</span>
+				<span class="row2">
+					<label>
+						<input type="checkbox" id="userIntr1" name="userIntr" value="M" class="intr"/> <span class="rtxt">돈</span>
+					</label>
+					<label>
+						<input type="checkbox" id="userIntr2" name="userIntr" value="F" class="intr"/> <span class="rtxt">명예</span>
+					</label>
+					<label>
+						<input type="checkbox" id="userIntr3" name="userIntr" value="E" class="intr"/> <span class="rtxt">코딩</span>
+					</label>
+					
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1"></span>
+				<span class="row2">
+					<select id="selectIntr" name="selectIntr" class="selectIntr">
+						<option>선택하세요</option>
+					</select>
+				</span>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+
+			<div style="height:30px;"></div>
+
+			<div class="line">
+				<span class="row1">휴대전화</span>
+				<span class="row2" style="width:250px;float:left">
+					<input type="text" name="userPhone" id="userPhone" class="textbox1"
+					style="width:245px;"/>
+				</span>
+				<btn class="btn">
+					인증번호 받기 
+				</btn>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+			<div class="line" style="height:30px;"></div>
+			<div class="line">
+				
+				<btn class="btn" style="width:400px;" onclick="memberOK();">
+					가입하기 
+				</btn>
+
+			</div>
+
+		</form>
+	</div>
+ </body>
+</html>
+
+<!--  
+
+<body>
+
+	<form name="testForm" action = "memberJoin_ok.jsp">
+		<div>
+			성별
+			<label><input type = "radio" name = "gender" value = "Male" /> 남자</label>
+			<label><input type = "radio" name = "gender" value = "Female" /> 여자</label>
+			<label><input type = "radio" name = "gender" value = "ETC" /> 기타</label>
+		</div>
+		<div>
+			취미
+			<label><input type = "checkbox" name = "hobby" value = "M" /> 영화보기</label>
+			<label><input type = "checkbox" name = "hobby" value = "S" /> 음악듣기</label>
+			<label><input type = "checkbox" name = "hobby" value = "C" /> 수집</label>
+		</div>
+		<div>
+			<input type="submit" velue="확인"/>
+		</div>
+	
+	</form> 
+
+</body>
+</html>
+-->
+```
+
+^
+
+memjs
+
+```jsx
+function init(){
+
+	var obj = document.getElementById("userMonth");
+
+	var strMonth = "<option value=''>월</option>";
+
+	for(var i = 1; i <= 12; i++){
+		strMonth += "<option value='" + i + "'>" + i + "</option>";
+	}
+
+	obj.innerHTML = strMonth;
+}
+
+function delLine(obj){
+
+}
+
+//필수값 체크 함수
+function chkValue(id1, id2){
+	
+	var obj = document.getElementById(id1);
+
+	if(obj.value == ""){
+		var obj2 = document.getElementById(id2);
+		obj2.innerHTML = "필수값입니다.";
+	}
+	else{
+		var obj2 = document.getElementById(id2);
+		obj2.innerHTML = "";
+	}
+
+}
+
+function chkPass(){
+	
+	var obj1 = document.getElementById("userPass");
+	var obj2 = document.getElementById("userPass_Re");
+
+	//두개의 값중에 하나라도 값이 존재 할때만 아래의 로직이 진행되어야 한다.
+	//두개의 값이 모두 빈값
+
+	if(obj1.value != "" || obj2.value != "")
+	{
+		if(obj1.value != obj2.value){
+			var obj3 = document.getElementById("passMsg_Re");
+			obj3.innerHTML = "두개의 패스워드값이 일치하지 않습니다.";
+		}
+		else{
+			var obj3 = document.getElementById("passMsg_Re");
+			obj3.innerHTML = "패스워드 일치";
+		}
+	}
+	
+
+}
+
+/*
+function chk_Year(){
+	
+	var obj = document.getElementById("userYear");
+	
+
+}
+*/
+
+function chk_Year(obj){
+	
+	var obj2 = document.getElementById("birthMsg");
+	if(obj.value.length != 4){
+
+		obj2.innerHTML = "년도는 4자리를 정확하게 입력하세요.";
+
+	}
+	else{
+		obj2.innerHTML = "";
+		
+		chk_Month();
+
+	}
+}
+
+function chk_Month(){
+	var obj = document.getElementById("userMonth");
+
+	if(obj.value.length == 0){
+		var obj2 = document.getElementById("birthMsg");
+		obj2.innerHTML = "태어난 월을 선택해 주세요";
+	}
+	else{
+		var obj2 = document.getElementById("birthMsg");
+		obj2.innerHTML = "";
+
+		chk_day();
+	}	
+}
+
+function chk_day(){
+	var obj = document.getElementById("userDay");
+
+	if(parseInt(obj.value) <= 0 || parseInt(obj.value) > 31){
+		alert();
+		var obj2 = document.getElementById("birthMsg");
+		obj2.innerHTML = "태어난 일자를 정확하게 입력해 주세요";
+	}
+	else{
+		var obj2 = document.getElementById("birthMsg");
+		obj2.innerHTML = "";
+	}
+
+}
+
+function memberOK(){
+
+	document.getElementById("memberForm").submit();
+
+}
+
+/*
+function chkValue_ID(){
+	
+	var obj = document.getElementById("userID");
+
+	if(obj.value == ""){
+		var obj2 = document.getElementById("idMsg");
+		obj2.innerHTML = "필수값입니다.";
+	}
+	else{
+		var obj2 = document.getElementById("idMsg");
+		obj2.innerHTML = "";
+	}
+
+}
+
+function chkValue_Pass(){
+	
+	var obj = document.getElementById("userPass");
+
+	if(obj.value == ""){
+		var obj2 = document.getElementById("passMsg");
+		obj2.innerHTML = "필수값입니다.";
+	}
+	else{
+		var obj2 = document.getElementById("passMsg");
+		obj2.innerHTML = "";
+	}
+
+}
+*/
+```
+
+```css
+body{
+	margin:0px;
+	padding:0px;
+	background-color:#f5f6f7;
+}
+
+#wrap{
+	
+	width:26%;
+	margin:0% 37% 0% 37%;
+}
+
+.textbox1{
+	/*border:1px solid orange;*/
+	width:295px;
+	font-size:14px;
+	margin-top:10px;
+	border-style:none;
+}
+
+.row1{
+	display:block;
+	width:400px;
+	font-size:14px;
+	padding:3px 0px 3px 0px;
+	font-family:굴림;
+	font-weight:bolder;
+	/*border:1px solid #cccccc;*/
+}
+
+.row2{
+	display:block;
+	width:400px;
+	height:40px;
+	border:1px solid #dedede;
+	border-radius:5px;
+	background-color:#ffffff;
+}
+
+.row2 .col1{
+	display:block;
+	width:300px;
+	height:40px;
+	/*border:1px solid red;*/
+	float:left;
+}
+
+.row2 .col2{
+	display:block;
+	width:95px;
+	font-size:14px;
+	/*border:1px solid blue;*/
+	float:left;
+	padding:10px 0px 12px 0px;
+	color:#cdcdcd;
+}
+
+.row2 .gender{
+	
+	width:20px;
+	height:20px;
+	margin-top:10px;
+	display:block;
+	float:left;
+
+}
+.row2 .rtxt{
+	display:block;
+	width:100px;
+	float:left;
+	padding-top:8px;
+}
+
+.row2 .intr{
+	
+	width:20px;
+	height:20px;
+	margin-top:10px;
+	display:block;
+	float:left;
+
+}
+
+#userBirth span{
+	width:125px;
+	float:left;
+}
+
+#userBirth .empty{
+	width:11px;
+	height:5px;
+	display:block;
+}
+
+#userBirth .row2 #userMonth{
+	width:125px;
+	margin-top:8px;
+	font-size:15px;
+	border-style:none;
+}
+
+.selectIntr{
+	width:393px;
+	margin-top:8px;
+	font-size:15px;
+	border-style:none;
+}
+
+.btn{
+	background-color:#03c751;
+	color:#ffffff;
+	font-weight:bold;
+	display:block;
+	width:150px;
+	float:left;
+	text-align:center;
+	padding:10px 0px 10px 0px;
+	border-radius:10px;
+
+}
+
+.line{
+	clear:both;
+}
+
+.msg{
+		
+		width:395px;
+		height:25px;
+		display:block;
+		color:red;
+}
+```
+
+```java
+package PKG_DB;
+
+import java.sql.*;
+
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import oracle.jdbc.OracleTypes;
+
+public class DBhandle {
+
+	private String userID;
+	private String userPass;
+	private String url;
+	private String[] dbInfos;
+	private Connection con;
+	
+	public void setDBInfo(String[] dbInfos) {
+		this.dbInfos = dbInfos;
+	}
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	public void setUserPass(String userPass) {
+		this.userPass = userPass;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public void getConnection() {
+		
+		this.con = null;
+				
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			//con = DriverManager.getConnection(url, userID, userPass);
+			this.con = DriverManager.getConnection(dbInfos[0], dbInfos[1], dbInfos[2]);
+		
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	//inline query   select, delete, update, insert
+	
+	public Statement getStatement() {
+		
+		 getConnection();
+		
+		 Statement stmt = null;
+		 try {
+			 
+			stmt = this.con.createStatement();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
+		return stmt;
+		
+	}
+	
+	//insert, delete, update
+	public void executeQuery(String strSql) {
+		
+		Statement stmt = getStatement();
+		
+		try {
+			
+			stmt.execute(strSql);
+			
+			this.con.close();
+			this.con = null;
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	//select
+	public ResultSet getResultSet(String strSql) {
+		
+		Statement stmt = getStatement();
+		ResultSet rs = null;
+		
+		try {
+			rs = stmt.executeQuery(strSql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return rs;
+		
+	}
+	
+	
+	
+	//1.procedure활용해서 output parameter존재하지 않는경우
+	public void executeQuery(String strProcName, String[] strParams) {
+		
+		getConnection();
+		
+		try {
+			
+			CallableStatement csmt = this.con.prepareCall(strProcName);
+			
+			for(int i=0;i<strParams.length;i++) {
+				csmt.setString(i + 1, strParams[i]);
+			}
+			
+			csmt.execute();
+			
+			this.con.close();
+			this.con = null;
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+	
+	//2.outparmeter가 존재하는 경우 - ResultSet - output Cursor
+	public ResultSet getResultSet(String strProcName, String[] strParams) {
+		
+		getConnection();
+		
+		ResultSet rs = null;
+		
+		try {
+			CallableStatement csmt = this.con.prepareCall(strProcName);
+			
+				int paramsLength = strParams.length;
+				for(int i=0;i<paramsLength;i++) {
+					csmt.setString(i + 1, strParams[i]);
+				}
+				
+				csmt.registerOutParameter(paramsLength + 1, OracleTypes.CURSOR);
+				
+				csmt.execute();
+				rs = (ResultSet)csmt.getObject(paramsLength + 1);
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return rs;
+		
+	}
+	
+	public void setClose() {
+		
+		if(this.con != null) {
+			try {
+				this.con.close();
+				this.con = null;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+	}
+}
+```
+
+실행
+
+기존 DB SELECT 했을시
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5b1d8dc2-9e53-4031-b098-26c77ea6eea7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5b1d8dc2-9e53-4031-b098-26c77ea6eea7/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8f0810fb-d558-4d61-823c-42b323f25025/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8f0810fb-d558-4d61-823c-42b323f25025/Untitled.png)
+
+CTRL + F11 MEMBERJOIN 실행
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/65534234-53d5-4373-8761-759a3645c6f7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/65534234-53d5-4373-8761-759a3645c6f7/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/553e1183-e0e1-4e24-8b78-8b8cf806095c/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/553e1183-e0e1-4e24-8b78-8b8cf806095c/Untitled.png)
+
+중복값은 넣어도 db에 안넣어짐 실행 안된다~ 
+
+---
+
+---
+
+db 데이터 집어넣기
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2bc46fc8-5341-4c10-9703-b533bd22dd71/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2bc46fc8-5341-4c10-9703-b533bd22dd71/Untitled.png)
+
+```java
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.io.PrintWriter" %>
+
+<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page" />
+
+   <%
+   
+   	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+  
+	
+	DBConn.setDBInfo(dbInfos);
+   
+   	String strProc = "{call PKG_BOARD.PROC_BOARD_SEL(?,?,?)}";
+   	
+   	String[] strParams = new String[2];
+   	strParams[0] = "List";
+   	strParams[1] = "";
+   	
+   	ResultSet rs = DBConn.getResultSet(strProc, strParams);
+   	
+   	String strXML = "<?xml version='1.0' encoding='UTF-8'?>";
+   	strXML += "<rows>";
+   	while(rs.next()){
+   		
+   		strXML += "<row>";
+   		strXML += "<bnum>"  + rs.getString("BNUM") + "</bnum>";
+   		strXML += "<title>"  + rs.getString("TITLE") + "</title>";
+   		strXML += "<regdate>"  + rs.getString("REGDATE") + "</regdate>";
+   		strXML += "</row>";
+   		
+   	}
+   	strXML += "</rows>";
+   	//System.out.println(strXML);
+   	
+   	request.setCharacterEncoding("utf-8");
+	response.setContentType("text/xml; charset=utf-8");
+   	
+    PrintWriter writer = response.getWriter();
+    writer.print(strXML);
+   	
+   
+   	
+   %>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+	<style>
+		.row{
+			width:600px;
+			clear:both;
+
+		}
+		
+		.row span{
+			width:100px;
+			height:30px;
+			display:block;
+			font-size:13px;
+			color:#777777;
+			border:1px solid #cccccc;
+			border-width:0px 0px 1px 0px;
+			padding: 7px 0px 0px 0px;
+			float:left;
+			text-align:center;
+		}
+		
+	</style>
+	
+	<script>
+	
+		var httpRequest = null;
+		
+		function getHttpRequest(){
+			
+			//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+			 httpRequest = new XMLHttpRequest();
+			
+		}
+		
+		function getList(){
+			
+			
+			getHttpRequest();
+			//server에 있는 list.jsp를 호출
+			httpRequest.onreadystatechange = callback; //callback 함수이름
+			httpRequest.open("GET","./list.jsp",true);
+			httpRequest.send(null);
+			
+		}
+		
+		function callback(){
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{
+				if(httpRequest.status == 200)
+				{
+					
+					var datas = httpRequest.responseXML;
+					setList(datas);
+					
+				}
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}
+			
+		}
+		
+		function setList(datas){
+			
+			var boards = datas.getElementsByTagName("row"); // 배열
+			
+			var strHTML = "";
+			for(var i=0;i<boards.length;i++){
+				var bnum= boards[i].childNodes[0].childNodes[0].nodeValue; //bnum 첫번재 row 의 . 값 5	
+				var title= boards[i].childNodes[1].childNodes[0].nodeValue; //title
+				var regdate= boards[i].childNodes[2].childNodes[0].nodeValue; //regdate
+				
+				strHTML += "<span style = 'width:100px;'>" + bnum + "</span>";
+				strHTML += "<span style = 'width:300px;'>" + title + "</span>";
+				strHTML += "<span style = 'width:200px;'>" + regdate + "</span>";
+				
+			}
+			
+			document.getElementById("list").innerHTML= strHTML;
+		}
+	
+	</script>
+</head>
+<body >
+	<div>
+		<input type="button" value="리스트 가져오기" onclick="getList()" />
+	</div>
+
+	<div class="row">
+		<span style = "width:100px;" >글제목</span>
+		<span style = "width:300px;" >글번호</span>
+		<span style = "width:200px;" >작성일</span>
+	</div>
+	
+	<div class="row" id="list">
+		<span style = "width:100px;"></span>
+		<span style = "width:400px;"></span>
+		<span style = "width:100px;"></span>
+	</div>
+	
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1f414998-ff25-4980-90d1-b14c21c866c6/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1f414998-ff25-4980-90d1-b14c21c866c6/Untitled.png)
+
+LIST
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a6d1594c-f462-4054-ab5b-13e923c7fc62/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a6d1594c-f462-4054-ab5b-13e923c7fc62/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/794eb39b-609d-4493-90bb-d857ca1527da/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/794eb39b-609d-4493-90bb-d857ca1527da/Untitled.png)
+
+VIEW HTML
+
+---
+
+---
+
+안보고 memberjoin_ok
+
+```java
+<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
+
+<%@ page import ="java.sql.*"%> 
+<jsp:useBean id="DBConn" class="PKG_DB_TEST.DBhandle" scope="page"  /> 
+
+<%
+
+	String strUserID = request.getParameter("userID");
+	String strUserPass = request.getParameter("userPass");
+	String strUserName = request.getParameter("userName");
+	String strUserGender = request.getParameter("userGender");
+	String strUserYear = request.getParameter("userYear");
+	String strUserMonth = request.getParameter("userMonth");
+	String strUserDay = request.getParameter("userDay");
+	String[] strUserIntrs = request.getParameterValues("userIntr");
+	String strUserPhone = request.getParameter("userPhone");
+	
+	//
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+
+	DBConn.setDBInfo(dbInfos);
+	
+	//중복체크
+	
+	String strProc_Chk = "{call PKG_MEMBER.PROC_CHK_USERID(?,?)}";
+	String[] ChkstrParams = new String[1];
+	ChkstrParams[0] = strUserID; // ? 
+	
+	//결과 담고
+	ResultSet rs = DBConn.getResultSet(strProc_Chk, ChkstrParams);
+	rs.next();
+	
+	//db에서 decode로 만든 중복값을 들고옴
+	String DB_YNResult = rs.getString("RST");
+	
+	//중복 체크 if- 중복부분 거르고 /  esle - 값 입력 insesrt 
+	String CHK_YN = "Y";
+	if(DB_YNResult.equals(CHK_YN)){
+		// 중복일때 돌려주는 함수 list 없어서 out.print로 찍기만함 
+		out.print("id중복 ");
+	}
+	else{
+		// 중복이 아닐때 실행되는 함수  + "," 처리
+		String save = "";
+		
+		int com = strUserIntrs.length;  // 체크박스 클릭수 길이 (돈:m 명예:f 코딩:e)
+		
+		for(int i=0; i< com; i++){
+			
+			save += strUserIntrs[i];
+			
+			if( i != com - 1 ){
+				save += ",";	
+			}
+			
+		}
+	
+				// insert하는 프로시져를 불러온다
+		String proc_Ins = "{call PKG_MEMBER.PROC_MEMBER_INS(?,?,?,?,?,?,?)}";
+		String[] INSERT = new String[7];
+		INSERT[0] = strUserID;
+		INSERT[1] = strUserPass;
+		INSERT[2] = strUserName;
+		INSERT[3] = strUserGender;
+		INSERT[4] = strUserYear + "-" + strUserMonth + "-" + strUserDay;
+		INSERT[5] = save;
+		INSERT[6] = strUserPhone;
+		
+		DBConn.executeQuery(proc_Ins, INSERT); // (실행할 프로시저, 함수 )
+		DBConn.setClose();
+			
+	} // else{ 
+	
+
+%>
+```
