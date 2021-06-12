@@ -1,0 +1,309 @@
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8d1677dc-4534-4f44-85c4-108abf4f9b2f/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8d1677dc-4534-4f44-85c4-108abf4f9b2f/Untitled.png)
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.io.PrintWriter" %>
+	
+	<jsp:useBean id="DBConn" class="PKG_DB_TEST.DBhandle" scope="page" />
+
+	<%
+	
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+	DBConn.setDBInfo(dbInfos);
+	
+	String strProc = "{call PKG_BOARDS_01.PROC_BOARDS_SEL_01(?,?,?)}";
+	
+	String[] strParmas = new String[2];
+	strParmas[0] = "List";
+	strParmas[1] = "";
+	
+	ResultSet rs = DBConn.getResultSet(strProc, strParmas);
+	
+	String strXML = "<?xml version='1.0'?>";
+strXML += "<rows>";
+	while(rs.next()){
+		
+		strXML += "<row>";
+		strXML += "<bnum>"+ rs.getString("BNUM_01") + "</bnum>";
+		strXML += "<title>" + rs.getString("TITLE_01") + "</title>";
+		strXML += "<contents>" + rs.getString("CONTENTS_01") + "</contents>";
+		strXML += "<regdate>"  + rs.getString("REGDATE_01") + "</regdate>";
+		strXML += "</row>";
+		
+	}
+strXML += "</rows>";	
+
+	response.setContentType("text/xml");
+	
+	PrintWriter writer = response.getWriter();
+	writer.print(strXML);
+	
+		
+	%>
+```
+
+```jsx
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	<style>  
+		.row {
+			width: 860px;
+			clear: both;
+		}
+		
+		.row span{
+		
+			width: 200px;
+			height: 40px;
+			border: 1px solid #8C8C8C;
+			color: #747474;
+			border-width: 0px 0px 2px 0px;
+			display:block;
+			float: left;
+			text-align: center;
+			padding :  10px 0px 0px 0px;
+			font-size: 12;
+			font-family: 배달의민족 한나는 열한살;
+					
+		}
+		
+		.row2 {
+			width: 850px;
+			clear: both;
+		}
+		
+		.row2 span{
+		
+			width: 200px;
+			height: 40px;
+			border: 1px solid #8C8C8C;
+			color: #000000;
+			border-width: 0px 0px 2px 0px;
+			display:block;
+			float: left;
+			text-align: center;
+			padding :  10px 0px 0px 0px;
+			font-size: 12;
+			font-family: 배달의민족 한나는 열한살;
+					
+		}
+		
+		.row3 {
+			width: 800px;
+			clear: both;
+			display:block;
+			
+		}
+	</style>
+	<script>
+	
+		var httpRequest = null;
+		
+		function getHttpRequest(){
+			
+			httpRequest = new XMLHttpRequest();
+		}
+		
+		function getList(){
+			
+			getHttpRequest();
+			httpRequest.onreadystatechange = callback; 
+			httpRequest.open("GET","./list_01.jsp",true);
+			httpRequest.send(null);
+			
+		}
+		
+		function callback(){
+			
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{	
+				if(httpRequest.status == 200)
+				{
+					
+					var datas = httpRequest.responseXML;
+					setList(datas);
+					
+				}
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}
+			
+		}
+		
+		function setList(datas){
+			
+			var boards_01 = datas.getElementsByTagName("row");
+			
+			var strHTML= ""; 
+			for(var i=0; i<boards_01.length;i++){
+				var bnum_01 = boards_01[0].childNodes[0].childNodes[0].nodeValue;
+				var title_01= boards_01[i].childNodes[1].childNodes[0].nodeValue;
+				var contents_01= boards_01[i].childNodes[2].childNodes[0].nodeValue;
+				var regdate_01= boards_01[i].childNodes[3].childNodes[0].nodeValue; 
+				
+				strHTML +=	"<span style = 'width:60px;'>"+ bnum_01 + "</span>";
+				strHTML +=	"<span style = 'width:200px;'>"+ title_01 + "</span>";
+				strHTML +=	"<span style = 'width:350px;'>"+ contents_01 + "</span>";
+				strHTML +=	"<span style = 'width:200px;'>"+ regdate_01 + "</span>";
+			}
+			
+			document.getElementById("list").innerHTML = strHTML;
+		}
+		
+	</script>
+
+</head>
+<body>
+	<div class="row3">
+		<input style="display:block;float:right;background-color:#FFC19E;color:#000000;height:30px;font-size: 15px;font-family: 배달의민족 한나는 열한살;" 
+				type="button" value="boards_01불러오기" onclick="getList();"/>
+	</div>
+	<div class="row">
+		<span style = "width:60px;"> 글번호 </span>
+		<span style = "width:200px;"> 제목 </span>
+		<span style = "width:350px;"> 내용 </span>
+		<span style = "width:200px;"> 작성일 </span>
+	</div>
+	
+	<div class="row2" id="list">
+		<span style = "width:60px;"> </span>
+		<span style = "width:200px;"> </span>
+		<span style = "width:350px;"> </span>
+		<span style = "width:200px;"> </span>
+	</div>
+
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9d4751ba-9d9f-4141-9857-50bfc6968ae2/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9d4751ba-9d9f-4141-9857-50bfc6968ae2/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1d6b14cb-aac2-48a4-9b76-524e9b6646a6/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1d6b14cb-aac2-48a4-9b76-524e9b6646a6/Untitled.png)
+
+```sql
+CREATE TABLE BOARDS_01
+(
+	IDX_01 	 NUMBER(8)  NOT NULL PRIMARY KEY,
+	TITLE_01 	 VARCHAR2(50)  NOT NULL,
+	CONTENTS_01  	VARCHAR2(4000) 	 NOT NULL,
+	MEMID_01 	 	 CHAR(6) 	 NOT NULL,
+	MENUID_01 	 	 CHAR(4) 	NOT NULL,
+	REGDATE_01 	DATE 	 NOT NULL,
+	VISITED_01 	 NUMBER(6) NOT NULL,
+	BNUM_01		NUMBER(6) 	NOT NULL
+);
+```
+
+```sql
+CREATE OR REPLACE
+PACKAGE BODY PKG_BOARDS_01 AS
+
+  PROCEDURE PROC_BOARD_INS_01(
+	IN_TITLE_01  IN VARCHAR2,
+	IN_CONTENT_01 IN VARCHAR2,
+	IN_MEMID_01  	IN  VARCHAR2,
+	IN_MENUID_01 	IN VARCHAR2 
+  ) 
+  AS
+  -- 글번호, 첫번째 글이 들어오면1, 나머지는 하나씩 증가 
+	B_CNT_01  NUMBER;
+	B_NUM_01 	NUMBER;
+  BEGIN
+    
+	SELECT DECODE(MAX(BNUM_01),NULL,1, MAX(BNUM_01)+1)
+	INTO B_CNT_01
+	FROM BOARDS_01;
+	
+	INSERT INTO BOARDS_01
+	(
+		IDX_01, TITLE_01, CONTENTS_01, MEMID_01, MENUID_01, REGDATE_01, VISITED_01, BNUM_01
+	)
+	VALUES
+	(
+		BOARDSSEQ_01.NEXTVAL, IN_TITLE_01, IN_CONTENT_01, 
+		IN_MEMID_01, IN_MENUID_01, SYSDATE, 0, B_CNT_01
+	)
+	;
+	
+  END PROC_BOARD_INS_01;
+------------------------------------------------END INS
+--START SEL---------------------------
+
+  PROCEDURE PROC_BOARDS_SEL_01(
+  
+	IN_GBN_01 	IN VARCHAR2,
+	IN_IDX_01 	 IN 	 NUMBER,
+	O_CUR_01	 OUT 	SYS_REFCURSOR
+ 
+  ) 
+  AS
+  BEGIN
+		--게시판 리스트에서 가져갈 SELECT 
+       --게시판 글 내용 보기에서 가져갈 SELECT 
+	
+	OPEN O_CUR_01 FOR
+	SELECT IDX_01, BNUM_01, TITLE_01, CONTENTS_01, MEMID_01,
+			TO_CHAR(REGDATE_01, 'YYYY-MM-DD')AS REGDATE_01, VISITED_01,
+			TO_CHAR(REGDATE_01, 'YYYY-MM-DD-HH24:MI')AS REGDATE_CON_01
+	FROM BOARDS_01
+	WHERE TO_CHAR(IDX_01) LIKE '%'||  IN_IDX_01 ||'%'
+	ORDER BY BNUM_01 DESC
+	;   
+	
+  END PROC_BOARDS_SEL_01;
+------------------------------------------------END SEL
+--START DEL------------------------------
+
+  PROCEDURE PROC_BOARDS_DEL_01(
+  
+	IN_IDX_01  IN NUMBER
+  
+	) 
+  AS
+  BEGIN
+	--글삭제
+    DELETE FROM BOARDS_01
+	WHERE IDX_01 = IN_IDX_01;
+	
+	--글번호 재정렬
+	UPDATE BOARDS_01
+	SET BNUM_01 = BNUM_01 - 1
+	WHERE IDX_01 > IN_IDX_01
+	;
+	
+  END PROC_BOARDS_DEL_01;
+------------------------------------------------END DEL
+--START UPD--------------------------------
+  PROCEDURE PROC_BOARDS_UPD_01(
+	
+		IN_IDX_01 IN  NUMBER,
+		IN_TITLE_01 	IN 	 VARCHAR2,
+		IN_CONTENTS_01 	IN 	 VARCHAR2
+	) AS
+  BEGIN
+    
+	UPDATE BOARDS_01
+	SET TITLE_01 = IN_TITLE_01,
+		CONTENTS_01 = IN_CONTENTS_01,
+		REGDATE_01 = SYSDATE
+	WHERE IDX_01 = IN_IDX_01
+	;
+	
+  END PROC_BOARDS_UPD_01;
+
+END PKG_BOARDS_01;
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a3842758-0d75-45ea-a014-65190b85c7dd/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a3842758-0d75-45ea-a014-65190b85c7dd/Untitled.png)
+
+SELECT * FROM BOARDS_01;  — 연동된 데이터베이스
