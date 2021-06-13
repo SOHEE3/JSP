@@ -1,0 +1,372 @@
+주말 나혼자
+
+DB 에 MEMBERS_01 만들기
+
+```sql
+CREATE OR REPLACE
+PACKAGE BODY PKG_MEMBER_01 AS
+
+  PROCEDURE  PROC_MEMBER_INS_01
+  (
+	IN_MEMID_01 	  IN 	   VARCHAR2,
+	IN_MEMPASS_01     IN       VARCHAR2,
+    IN_MEMNAME_01     IN       VARCHAR2,
+    IN_MEMGENDER_01   IN       VARCHAR2,
+    IN_MEMBIRTH_01    IN       VARCHAR2,
+    IN_MEMHOBBY_01    IN       VARCHAR2,
+    IN_MEMPHONE_01    IN       VARCHAR2
+  
+  ) 
+  AS
+  BEGIN
+    
+	INSERT INTO MEMBERS_01
+	(
+		MEMID_01, MEMPASS_01, MEMNAME_01, MEMGENDER_01, MEMBIRTH_01, MEMHOBBY_01, MEMPHONE_01
+	)
+	VALUES
+	(
+		IN_MEMID_01, IN_MEMPASS_01, IN_MEMNAME_01, IN_MEMGENDER_01, IN_MEMBIRTH_01, IN_MEMHOBBY_01, IN_MEMPHONE_01
+	)
+	;
+	
+	
+  END PROC_MEMBER_INS_01;
+----------------------------------------------END INS
+-------START USERID-------------------
+  PROCEDURE 	PROC_MEMBER_CHK_USERID_01
+	(
+		IN_MEMID_01        IN       VARCHAR2,
+        O_CUR_01        OUT     SYS_REFCURSOR
+	) 
+	AS
+	
+		YN_RESULT 	 VARCHAR2(1);
+	
+  BEGIN
+    --NULL값이 나오면 중복이 아니고(N) NULL값이 아닌 값이 나오면 중복이게(Y) 설정
+	
+	 SELECT DECODE(MAX(MEMID_01),NULL,'N','Y')
+	 INTO YN_RESULT
+	 FROM MEMBERS_01
+	 WHERE MEMID_01 = IN_MEMID_01
+	 ;
+	 
+	-- 출력부분
+	OPEN O_CUR_01 FOR
+	SELECT YN_RESULT AS RST_01 FROM DUAL;
+	
+  END PROC_MEMBER_CHK_USERID_01;
+
+END PKG_MEMBER_01;
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d9479780-754f-443a-aa9e-ba486d701242/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d9479780-754f-443a-aa9e-ba486d701242/Untitled.png)
+
+연동해서 홈페이지에서 받아온 값 db연동 결과 / 이름 부분에 한글을 입력하면 깨지는데 따로 설정 해줘야한다 
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b6ff6319-34f4-4194-a86d-0b9d4d8b28b4/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b6ff6319-34f4-4194-a86d-0b9d4d8b28b4/Untitled.png)
+
+```java
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import= "java.sql.*" %>    
+<%@ page import= "java.io.PrintWriter" %>
+    <jsp:useBean id="DBConn" class ="PKG_DB_TEST.DBhandle" scope="page" />
+
+<%
+//1. client 에서 날려준 Parameter를 받아 
+	String strUserID = new String("uesrID");
+//2 db 연결
+	String[] dbInfos_01 = new String[3];
+	dbInfos_01[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos_01[1] = "scoredb";
+	dbInfos_01[2] = "1";
+	
+	DBConn.setDBInfo(dbInfos_01);
+	
+	//- 프로시져
+	
+	String strProcName_01 = "{call PKG_MEMBER_01.PROC_MEMBER_CHK_USERID_01(?,?)}";
+	
+	String[] strParams = new String[1];  // 클라이언트에서 날아온 아이디 
+	strParams[0] = strUserID;
+	
+	ResultSet rs = DBConn.getResultSet(strProcName_01, strParams);  // db프로시져에 넣어서 yn 확인
+	
+	rs.next(); 
+	
+		//-- db  out 출력 as RST_01(YN_RESULT) 
+	String strResult_01 = rs.getString("RST_01");
+			
+//3 strResult 가 "Y" 이면 중복, "N"이면 중복되지 않았다
+	String strXML = "<?xml version='1.0'?>";
+	strXML += "<result>" + strResult_01 + "</result>";
+	
+	response.setContentType("text/xml");
+	
+	PrintWriter writer = response.getWriter();
+	writer.print(strXML);
+	
+	
+%>
+```
+
+^어제 해둔 memberjoin + ok 
+
+```java
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title> 회원관리 폼_01</title>
+
+	<link rel="stylesheet" href="../CSS/member.css">
+	<script src="../JS/mem.js"></script>
+</head>
+<body>
+	<div id="wrap">
+		<form name="memberForm" id="memberForm" action="./memberJoin_ok_01.jsp" method="post">
+					
+		<div class="line">
+				<span class="row1">아이디</span>
+				<span class="row2">				
+					<span class="col1">
+						<input type="text" name="userID" id="userID" class="textbox1"
+						 onblur="chkValue('userID','idMsg');"/>
+					</span>
+					<span class="col2">
+						@naver.com
+					</span>				
+				</span>
+				<span id="idMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1">비밀번호</span>
+				<span class="row2">
+					<input type="text" name="userPass" id="userPass" class="textbox1"
+					style="width:396px;"
+					onblur="chkValue('userPass','passMsg');chkPass();"
+					/>
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+			
+				<span class="row1">비밀번호확인</span>
+				<span class="row2">
+					<input type="text" name="userPass_Re" id="userPass_Re" class="textbox1"
+					style="width:396px;"
+					onblur="chkValue('userPass_Re','passMsg_Re');chkPass();"
+					/>
+				</span>
+				<span id="passMsg_Re" class="msg"></span>
+			</div>
+
+			<div style="height:30px;"></div>
+
+			<div class="line">
+				<span class="row1">이름</span>
+				<span class="row2">
+					<input type="text" name="userName" id="userName" class="textbox1"
+					style="width:396px;"/>
+				</span>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1">생년월일</span>
+				<span id="userBirth">
+					<span class="row2" >
+						<input type="text" name="userYear" id="userYear" class="textbox1"
+						style="width:120px;" placeholder="년(4자)"/>
+					</span>
+					<span class="empty"></span>
+					<span class="row2" >
+						<select id="userMonth" name="userMonth">
+						
+							<%
+							
+								String strHTML = "";
+								for(int i=1 ; i<=12 ;i++){
+									strHTML += "<option value='" + i + "'>" + i +"</option>";
+									
+								}						
+			
+							%>
+							<%= strHTML %>
+						
+				
+							<option value="">월</option>
+
+						</select>
+					</span>
+					<span class="empty"></span>
+					<span class="row2" >
+						<input type="text" name="userDay" id="userDay" class="textbox1"
+						style="width:120px;" placeholder="일"/>
+					</span>
+				</span>
+				<span id="birthMsg" class="msg"></span>
+			</div>
+
+			<div class="line" id="">
+				<span class="row1">성별</span>
+				<span class="row2">
+					<label>
+						<input type="radio" id="userGender1" name="userGender" value="M" class="gender"/> <span class="rtxt">남자</span>
+					</label>
+					<label>
+						<input type="radio" id="userGender2" name="userGender" value="F" class="gender"/> <span class="rtxt">여자</span>
+					</label>
+					<label>
+						<input type="radio" id="userGender3" name="userGender" value="E" class="gender"/> <span class="rtxt">선택안함</span>
+					</label>
+					
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line" id="">
+				<span class="row1">관심사</span>
+				<span class="row2">
+					<label>
+						<input type="checkbox" id="userIntr1" name="userIntr" value="M" class="intr"/> <span class="rtxt">돈</span>
+					</label>
+					<label>
+						<input type="checkbox" id="userIntr2" name="userIntr" value="F" class="intr"/> <span class="rtxt">명예</span>
+					</label>
+					<label>
+						<input type="checkbox" id="userIntr3" name="userIntr" value="E" class="intr"/> <span class="rtxt">코딩</span>
+					</label>
+					
+				</span>
+				<span id="passMsg" class="msg"></span>
+			</div>
+
+			<div class="line">
+				<span class="row1"></span>
+				<span class="row2">
+					<select id="selectIntr" name="selectIntr" class="selectIntr">
+						<option>선택하세요</option>
+					</select>
+				</span>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+
+			<div style="height:30px;"></div>
+
+			<div class="line">
+				<span class="row1">휴대전화</span>
+				<span class="row2" style="width:250px;float:left">
+					<input type="text" name="userPhone" id="userPhone" class="textbox1"
+					style="width:245px;"/>
+				</span>
+				<btn class="btn">
+					인증번호 받기 
+				</btn>
+				<span id="nameMsg" class="msg"></span>
+			</div>
+			<div class="line" style="height:30px;"></div>
+			<div class="line">
+				
+				<btn class="btn" style="width:400px;" onclick="memberOK();">
+					가입하기 
+				</btn>
+
+			</div>
+
+		</form>
+	</div>
+ </body>
+</html>
+```
+
+```java
+<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
+
+<%@ page import ="java.sql.*"%> 
+<jsp:useBean id="DBConn" class="PKG_DB_TEST.DBhandle" scope="page"  /> 
+
+<%
+	// 클라이언트에서 받아올 매개변수들 
+	String strUserID = request.getParameter("userID");
+	String strUserPass = request.getParameter("userPass");
+	String strUserName = request.getParameter("userName");
+	String strUserGender = request.getParameter("userGender");
+	String strUserYear = request.getParameter("userYear");
+	String strUserMonth = request.getParameter("userMonth");
+	String strUserDay = request.getParameter("userDay");
+	String[] strUserIntrs = request.getParameterValues("userIntr");
+	String strUserPhone = request.getParameter("userPhone");
+	
+	//DB연동 로그인
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+			// PKG_DB DBhandle 에 만든 배열함수에 위의 db 로그인 값들을 넣어준다 
+	DBConn.setDBInfo(dbInfos);
+	
+	//중복체크 / 프로시져 불러오기 
+	
+	String strProc_Chk = "{call PKG_MEMBER_01.PROC_MEMBER_CHK_USERID_01(?,?)}";
+	String[] ChkstrParams = new String[1];
+	ChkstrParams[0] = strUserID; // ? 
+	
+	//결과 담고
+	ResultSet rs = DBConn.getResultSet(strProc_Chk, ChkstrParams);
+	rs.next();
+	
+	//db에서 decode로 만든 중복값을 들고옴
+	String DB_YNResult = rs.getString("RST_01");
+	
+	//중복 체크 if- 중복부분 거르고 /  esle - 값 입력 insesrt 
+	String CHK_YN = "Y";
+	if(DB_YNResult.equals(CHK_YN)){
+		// 중복일때 돌려주는 함수 list 없어서 그냥 out.print 처리 
+		out.print("id중복 ");
+	}
+	else{
+		// 중복이 아닐때 실행되는 함수  + "," 처리
+		String save = "";
+		
+		int com = strUserIntrs.length;  // 체크박스 클릭수 길이 (돈:m 명예:f 코딩:e)
+		
+		for(int i=0; i< com; i++){
+			
+			save += strUserIntrs[i];
+			
+			if( i != com - 1 ){
+				save += ",";	
+			}
+			
+		}
+	
+				// insert하는 프로시져를 불러온다
+		String proc_Ins = "{call PKG_MEMBER_01.PROC_MEMBER_INS_01(?,?,?,?,?,?,?)}";
+		String[] INSERT = new String[7];
+		INSERT[0] = strUserID;
+		INSERT[1] = strUserPass;
+		INSERT[2] = strUserName;
+		INSERT[3] = strUserGender;
+		INSERT[4] = strUserYear + "-" + strUserMonth + "-" + strUserDay;
+		INSERT[5] = save;
+		INSERT[6] = strUserPhone;
+		
+		DBConn.executeQuery(proc_Ins, INSERT);
+		DBConn.setClose(); // db 연동 끝
+			
+	} // else{ 
+	
+	//--- 
+	
+	
+%>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/18829482-df22-4950-958d-fa44fb5049e0/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/18829482-df22-4950-958d-fa44fb5049e0/Untitled.png)
