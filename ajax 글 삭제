@@ -1,0 +1,430 @@
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d84cae6c-56ff-47c9-893c-9013042a1865/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d84cae6c-56ff-47c9-893c-9013042a1865/Untitled.png)
+
+html에서 
+&lt : <   &gt : >
+
+&quot : "
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>관리자모드 - 메뉴관리</title>
+
+	<style>
+		
+		#mList{
+		
+		}
+		
+		#mList div{
+			clear:both;
+		
+		}
+		
+		#mList span{
+			display:block;
+			height:30px;
+			border:1px solid #888888;
+			float: left;
+			padding: 7px 0px 0px 0px;
+			text-align:center;
+		
+		}
+		
+	</style>
+	
+	<script>
+	
+	
+	
+		function getHttpRequest(){
+			
+			//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+			 httpRequest = new XMLHttpRequest();
+			
+		}
+		
+		function getList(){
+			
+			
+			getHttpRequest();
+			//server에 있는 list.jsp를 호출
+			httpRequest.onreadystatechange = callback; //callback 함수이름
+			httpRequest.open("POST","./Ajax/mngMenu.jsp",true); //get 데이터가 몇개안되면  post 많으면 /./ajax/chkID.jsp
+			httpRequest.send(null);
+			
+		}
+		
+		function callback(){
+			
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{
+				if(httpRequest.status == 200)
+				{
+					
+					var datas = httpRequest.responseXML;
+					setList(datas);
+										
+				}
+				
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}
+			
+		}
+		
+		
+		function setList(datas){
+			
+			var menuTags = datas.getElementsByTagName("menu");
+			
+			var menuCount = menuTags.length;
+			
+			
+			var menuID = "";
+			var menuName= "";
+			
+			
+			for(var i = 0; i<menuCount; i++){
+				
+				menuID = menuTags[i].childNodes[0].childNodes[0].nodeValue;
+				menuName = menuTags[i].childNodes[1].childNodes[0].nodeValue;
+				
+				alert(menuID);
+			}
+			
+			
+		}
+		
+		
+	</script>
+
+</head>
+<body>
+	<div id ="wrap">
+		<div id ="buttons">
+			<input type="button" value="리스트보기" onclick="getList()"/>
+		</div>
+		<div id ="mList">
+			<div>
+				<span style="width:120px;">메뉴아이디</span>
+				<span style="width:480px;">메뉴이름</span>
+				<span style="width:100px;"></span>
+			</div>
+					
+		</div>
+	</div>
+</body>
+</html>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import= "java.sql.*" %>    
+<%@ page import= "java.io.PrintWriter" %>
+
+    <jsp:useBean id="DBConn" class ="PKG_DB.DBhandle" scope="page" />
+
+    <%
+    
+    
+  // db 연결
+  	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+    
+          
+    	String strSql = "SELECT * FROM MENUS ORDER BY MENUID DESC";
+    
+    	ResultSet rs = DBConn.getResultSet(strSql);
+    	
+    	String strXML = "<?xml version='1.0'?>";
+    	
+    	//반드시 하나의 rootElement를 가져야 한다.
+    	strXML += "<menus>";
+    	
+    	while(rs.next()){
+    	
+	    	strXML += "<menu>";
+	    	strXML += "<menuid>";
+	    	strXML += rs.getString("MENUID");
+	    	strXML += "</menuid>";
+	    	
+	    	strXML += "<menuname>";
+	    	strXML += rs.getString("MENUNAME");
+	    	strXML += "</menuname>";
+	    	strXML += "</menu>";
+    	
+    	}
+    	
+    	strXML += "</menus>";
+    	
+    	//http를 이용해서 출력    	
+    	response.setContentType("text/xml");
+	
+		PrintWriter writer = response.getWriter();
+		writer.print(strXML);
+	
+   	   	
+    %>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/de38f5a7-d2ba-4da3-b9aa-eea417961a59/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/de38f5a7-d2ba-4da3-b9aa-eea417961a59/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d8df8a15-05c5-403e-bacf-baf885c7ca7d/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d8df8a15-05c5-403e-bacf-baf885c7ca7d/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/78eed0d8-5be0-4efe-bda4-e513b2286b6a/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/78eed0d8-5be0-4efe-bda4-e513b2286b6a/Untitled.png)
+
+---
+
+---
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8e777d7c-3d60-402e-a621-5609936727ac/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8e777d7c-3d60-402e-a621-5609936727ac/Untitled.png)
+
+○
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>관리자모드 - 메뉴관리</title>
+
+	<style>
+		
+		#mList{
+		
+		}
+		
+		
+		#mList div{
+			clear:both;
+		
+		}
+		
+		#mList span{
+			display:block;
+			height:30px;
+			border:1px solid #888888;
+			float: left;
+			padding: 7px 0px 0px 0px;
+			text-align:center;		
+		}
+		
+	</style>
+	
+	<script>
+		//선언	
+		var httpRequest = null;
+		var httpRequest2 = null;
+		
+		function getHttpRequest(){
+			
+			//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+			 return new XMLHttpRequest();
+			
+		}
+		
+		function getList(){
+			
+			
+			httpRequest = getHttpRequest();
+			//server에 있는 list.jsp를 호출
+			httpRequest.onreadystatechange = callback; //callback 함수이름
+			httpRequest.open("POST","./Ajax/mngMenu.jsp",true); 
+			httpRequest.send(null);
+			
+		}
+		
+		function callback(){
+			
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{
+				if(httpRequest.status == 200)
+				{
+					
+					var datas = httpRequest.responseXML;
+					setList(datas);
+								
+				}
+				
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}
+				
+		}
+		
+		
+		function setList(datas){
+			
+			var menuTags = datas.getElementsByTagName("menu");
+			
+			var menuCount = menuTags.length;
+			
+			
+			var menuID = "";
+			var menuName= "";
+			var strHTML = "";
+			
+				strHTML +=	"<div>";
+				strHTML += "<span style='width:120px;'>메뉴아이디</span>";
+				strHTML += "<span style='width:480px;'>메뉴이름</span>";
+				strHTML += "<span style='width:100px;'></span>";
+				strHTML +=	"</div>";
+			
+			
+			for(var i = 0; i<menuCount; i++){
+				
+				menuID = menuTags[i].childNodes[0].childNodes[0].nodeValue;
+				menuName = menuTags[i].childNodes[1].childNodes[0].nodeValue;
+							
+				strHTML += "<div>";
+				strHTML += "<span style='width:120px;'>" + menuID + "</span>";
+				strHTML += "<span style='width:480px;'>" + menuName + "</span>";
+				strHTML += "<span style='width:100px;'><a href='javascript:setDel(&quot;"+ menuID +"&quot;)'>삭제</a></span>";
+				strHTML += "</div>";
+								
+			}
+			
+			document.getElementById("mList").innerHTML = strHTML;
+		}
+		
+		function setDel(menuID){
+			
+			httpRequest2 = getHttpRequest(); // null 했으니까 다시 인스턴스화해야 객체가 만들어진다..?
+			//server에 있는 list.jsp를 호출
+		 	httpRequest2.onreadystatechange = getList; //callback 함수이름
+			httpRequest2.open("GET","./Ajax/delMenu.jsp?menuID=" + menuID, true); 
+			httpRequest2.send(null); 
+		}
+	
+	</script>
+
+</head>
+<body>
+	<div id ="wrap">
+		<div id ="buttons">
+			<input type="button" value="메뉴추가" onclick="getList()"/>
+			<input type="button" value="리스트보기" onclick="getList()"/>
+		</div>
+		<div id ="mList">
+							
+		</div>
+	</div>
+</body>
+</html>
+```
+
+● 
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import= "java.sql.*" %>    
+<%@ page import= "java.io.PrintWriter" %>
+
+    <jsp:useBean id="DBConn" class ="PKG_DB.DBhandle" scope="page" />
+
+    <%
+    
+    
+  // db 연결
+  	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+    
+          
+    	String strSql = "SELECT * FROM MENUS ORDER BY MENUID DESC";
+    
+    	ResultSet rs = DBConn.getResultSet(strSql);
+    	
+    	String strXML = "<?xml version='1.0'?>";
+    	
+    	//반드시 하나의 rootElement를 가져야 한다.
+    	strXML += "<menus>";
+    	
+    	//System.out.print(rs.next()); rs.next 한줄만 읽는다 전부 다 읽는것x 그래서 여기다 하나적고 while 들리면 2가지 내용중 1나만 나옴 
+    	//System.out.print(rs.next());
+    	while(rs.next()){ // 
+    	
+	    	strXML += "<menu>";
+	    	strXML += 	"<menuid>";
+	    	strXML += 		rs.getString("MENUID");
+	    	strXML += 	"</menuid>";
+	    	
+	    	strXML += 	"<menuname>";
+	    	strXML += 		rs.getString("MENUNAME");
+	    	strXML += 	"</menuname>";
+	    	strXML += "</menu>";
+    	
+    	}
+    	
+    	strXML += "</menus>";
+    	
+    	//http를 이용해서 출력    	
+    	response.setContentType("text/xml");
+	
+		PrintWriter writer = response.getWriter();
+		writer.print(strXML);
+	
+   	   	
+    %>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/cc362bc0-fddd-48e4-9fb5-0c0a1ce9b9ee/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/cc362bc0-fddd-48e4-9fb5-0c0a1ce9b9ee/Untitled.png)
+
+Ajax - mngMenu.jsp
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import= "java.sql.*" %>    
+<%@ page import= "java.io.PrintWriter" %>
+
+    <jsp:useBean id="DBConn" class ="PKG_DB.DBhandle" scope="page" />
+	<%
+	
+		String strMenuID = request.getParameter("menuID");	
+	
+	 // db 연결
+  	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+    
+  		String strSql = "DELETE FROM MENUS WHERE MENUID='" + strMenuID + "'";
+  		
+  		DBConn.executeQuery(strSql);
+  		
+  		
+  		
+	%>
+```
+
+html에서
+&lt : <   &gt : >
+
+&quot : "
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7f12c819-1ab2-4b8a-aa54-dc11f7a1ece3/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7f12c819-1ab2-4b8a-aa54-dc11f7a1ece3/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f9cd3e46-eca0-478d-aa93-a7e7c05079d7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f9cd3e46-eca0-478d-aa93-a7e7c05079d7/Untitled.png)
+
+누르면 삭제됨
