@@ -1,0 +1,682 @@
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3e4006d1-4600-4309-937d-b209baa73da8/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3e4006d1-4600-4309-937d-b209baa73da8/Untitled.png)
+
+클라이언트와 웹서버
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/062f9bdb-5e9a-40fe-9542-976feb6488bf/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/062f9bdb-5e9a-40fe-9542-976feb6488bf/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/569a35d5-9a60-4dd1-94e4-1374f72339fd/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/569a35d5-9a60-4dd1-94e4-1374f72339fd/Untitled.png)
+
+---
+
+---
+
+---
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/45ac04ce-35a9-4e91-a396-6ebb0a6c9b5a/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/45ac04ce-35a9-4e91-a396-6ebb0a6c9b5a/Untitled.png)
+
+---
+
+<list.jsp> - 들어갔을 때 제일 처음 뜨는  화면 
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+<%
+
+	String selectedMenuID2 = request.getParameter("selectedMenuID"); // 첫페이지 null 값 / String은 객체다 객체는 콜바이래퍼런스 참조없음 널
+	//String str = ""; // null /// -------board2.js -0---
+	
+	if(selectedMenuID2 == null){//==참조값이 없니 //equals(str) 하면 널 / equals() 는 안의 값을 비교한다. / 주소는 다른데 안에있는 string 값은 같니?
+		selectedMenuID2 = "M001";
+	}
+	
+	//System.out.println(selectedMenuID2);
+	
+%>    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	
+		<link rel="stylesheet" type="text/css" href="../CSS/board.css" />  <!-- css,js파일 -->
+									
+		<script src="../JS/board.js"></script> 
+		<!-- board.js를 선언해서 list와 board 페이지 전역변수 공유됨  -->
+
+	<script>
+		var clickMenuID = ""; // - 전역변수로 
+		// 넘어갈때 
+		function goWrite(){
+			//var clickMenuID = ""; // 이값을 어떻게 찾을것인가?
+			location.href = "./write.jsp?selectedMenuID=" + clickMenuID; // 띄우면 안됨 - 띄우고싶으면 post방식으로 보내야함
+		
+		}
+	
+	</script>
+
+</head>
+<body onload="getMenus('<%=selectedMenuID2%>');">
+	<div id="wrap">
+		<div id="menus">
+			<span></span>
+		</div>
+		<div  id="boards">
+			<div id="bHead">
+				<div></div>
+				<div>
+					<input type="button" value="글쓰기"  onclick="goWrite()"/>
+				</div>
+			</div>
+			<div id="bBoby">
+			
+			</div>
+			<div id="bBottom">
+			
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/16b674fc-1630-4c12-bc5a-3aab3d12f276/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/16b674fc-1630-4c12-bc5a-3aab3d12f276/Untitled.png)
+
+list.jsp
+
+---
+
+<write.jsp> 글쓰기 눌렀을 때 뜨는 화면
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+    <%
+    
+    	String selectedMenuID = request.getParameter("selectedMenuID");
+    
+    
+    %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<link rel="stylesheet" type="text/css" href="../CSS/board.css" /> 
+	
+	<script src="../JS/board2.js"></script>
+	
+</head>
+<!-- 복붙 -->
+<body onload="getMenus();">
+
+		<div id="wrap">
+		<div id="menus">
+			<span></span>
+		</div>
+		<div  id="bWrite">
+			<div id="bHead">
+				<div></div>
+				<div>
+					<!--<input type="button" value="글쓰기"  onclick="goWrite()"/> -->
+				</div>
+			</div>
+			<div id="bBoby">
+				<div id="writeForm">
+					<form action="write_ok.jsp" method="post">
+						<div>
+							<span class="left">글제목</span>
+							<span class="right">
+								<input type="text" name="title"/>
+							</span>
+					
+						</div>
+						<div>
+							<span class="left">글내용</span>
+							<span class="right">
+								<textarea name="content" cols="60" rows="12"></textarea>
+							</span>
+						</div>
+						<div> 
+							<span>메뉴아이디</span>
+							<span><input type="text" name="selectedMenuID" value="<%=selectedMenuID%>"></span>
+						</div>
+						<div>
+							<span>작성자</span>
+							<span></span>
+						</div>
+						<div>
+							<input type="submit" value="확인" />
+						</div>
+					</form>
+				</div>
+			</div>
+			<div id="bBottom">
+			
+			</div>
+		</div>
+	</div>
+	
+
+</body>
+</html>
+```
+
+<write_ok.jsp> 글이 써지면 받아올 db와 연동
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import= "java.sql.*" %>    
+
+    <jsp:useBean id="DBConn" class ="PKG_DB.DBhandle" scope="page" />    
+
+<%
+
+	request.setCharacterEncoding("UTF-8"); // 보낼때 한글 안깨지게 
+	String strTitle = request.getParameter("title");
+	String strContent = request.getParameter("content");
+	String strSelectedMenuID= request.getParameter("selectedMenuID");
+	String strMemID = "Mem001";
+
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strProcName= "{call PKG_BOARD.PROC_BOARD_INS(?,?,?,?)}";
+  	String[] strParams = new String[4];
+  	strParams[0] = strTitle;
+  	strParams[1] = strContent;
+  	strParams[2] = strMemID;
+  	strParams[3] = strSelectedMenuID;
+  	
+  	DBConn.executeQuery(strProcName, strParams);
+  	
+  	response.sendRedirect("./list.jsp?selectedMenuID=" + strSelectedMenuID );
+  	
+  		
+  	
+%>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2e659994-12c7-46f2-8428-5ad627c627e0/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2e659994-12c7-46f2-8428-5ad627c627e0/Untitled.png)
+
+write.jsp
+
+---
+
+JS / javascript 파일
+
+<board.js> : 함수 넣어놓은?
+
+```jsx
+/**
+ * 
+ */
+	
+	var httpRequest = null;
+	var httpRequest2 = null;
+	var MenuID = "";
+	
+	function getHttpRequest(){
+		
+		//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+		 return new XMLHttpRequest();
+		
+	}
+	
+	function getMenus(selectedMenuID){ // 처음 페이지 띄울때 m001 띄우기
+		
+		MenuID = selectedMenuID;
+		
+		httpRequest = getHttpRequest();
+		//server에 있는 list.jsp를 호출
+		httpRequest.open("POST","./ajax/getMenus.jsp",true);  
+		httpRequest.send(null); // post방식일때 보내고싶은게 없다  / get ? 써서 보내고 
+		httpRequest.onreadystatechange = menuList; //callback 함수이름 
+		
+	}
+	
+	function menuList(){
+	
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{	
+				if(httpRequest.status == 200)
+				{   
+					var datas = httpRequest.responseXML;
+					setMenus(datas);
+											
+				}
+				
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}	
+	}
+	
+	function setMenus(datas){
+		
+		//1.root
+		var menuIDs = datas.getElementsByTagName("menuid");
+		var menuNames = datas.getElementsByTagName("menuname");
+		
+		var strHTML = "";
+		
+		for(var i=0; i<menuIDs.length;i++){
+			strHTML += "<a href='javascript:getBoardList(&quot;" + menuIDs[i].childNodes[0].nodeValue+ "&quot;);'>";//++
+			//"<a href='./login.jsp'>
+			
+			//1회 javascript:getBoardList("  " + menuIDs[0].childNodes[0].nodeValue+ '  ");'>"
+			//1회 javascript:getBoardList("M001");'>"
+			
+			//2회 javascript:getBoardList("  " + menuIDs[1].childNodes[0].nodeValue+ '  ");'>"
+			//2회 javascript:getBoardList("M002");'>"
+			
+			//3회 javascript:getBoardList("  " + menuIDs[2].childNodes[0].nodeValue+ '  ");'>"
+			
+			strHTML += "<span>"
+			strHTML += menuNames[i].childNodes[0].nodeValue;
+			strHTML += "</span>"
+			strHTML += "</a>"
+		}
+		
+		document.getElementById("menus").innerHTML = strHTML;
+		
+		getBoardList(MenuID);
+	}
+	
+	//메뉴 클릭하면 실행
+	function getBoardList(selectedMenuID){ // selectedMenuID  1~6 게시판 ++ 
+		//2회 getBoardList("M002");'>"
+		
+		httpRequest2 = getHttpRequest();
+		
+		clickMenuID = selectedMenuID; // clickMenuID는 list.jsp(script src =해서 불렀기때문)에 가서 쓴다
+	
+		//server에 있는 list.jsp를 호출
+		httpRequest2.onreadystatechange = boardList; //callback 함수이름 
+		httpRequest2.open("POST","./ajax/getBoardList.jsp?menuid=" + selectedMenuID ,true);  /// getBoardList.jsp?menuid="
+		httpRequest2.send(null);
+		
+		
+	}
+	
+	function boardList(){
+		//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+		if(httpRequest2.readyState == 4)
+		{
+			if(httpRequest2.status == 200)
+			{
+				var datas = httpRequest2.responseXML;
+				setBoards(datas);
+										
+			}
+			
+			else{ alert("실패: " + httpRequest2.status); }
+		
+		}	
+	}
+	
+	function setBoards(datas){
+		
+		var bnums = datas.getElementsByTagName("bnum");
+		var titles = datas.getElementsByTagName("title");
+		var idxs = datas.getElementsByTagName("idx");
+		
+		var bnum, title, idx;
+		
+		
+		var strHTML = "";
+		strHTML += "<div class='row'>";
+		strHTML += "<span>글번호</span>";
+		strHTML += "<span style='width:500px'>글제목</span>";
+		strHTML += "</div>";
+		
+		for(var i=0;i<bnums.length;i++){
+			
+			var idx = idxs[i].childNodes[0].nodeValue;
+			var bnum = bnums[i].childNodes[0].nodeValue;
+			var title = titles[i].childNodes[0].nodeValue;
+			
+			var param = "?idx=" + idx + "&selectedMenuID=" + clickMenuID; // clickMenuID 클릭하고 삭제했을때 돌아오는 페이지 설정 
+			
+			strHTML += "<div class='row' style='clear:both'>";
+			strHTML += "<span>"+ bnum +"</span>";
+			strHTML += "<span style='width:500px'><a href='content.jsp"+  param +"'>"+ title +"</a></span>";
+			strHTML += "</div>";
+		}
+		document.getElementById("bBoby").innerHTML = strHTML;
+	}
+```
+
+<board2.js> : 함수넣어놓은2
+
+```jsx
+/**
+  보드222222222222 : 내가 쓰고 돌아왔을때 내가 쓴 게시판 글내용을 확인해주는 js
+ */
+	
+	var httpRequest = null;
+	var httpRequest2 = null;
+	
+	function getHttpRequest(){
+		
+		//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+		 return new XMLHttpRequest();
+		
+	}
+	
+	function getMenus(){
+		
+		
+		httpRequest = getHttpRequest();
+		//server에 있는 list.jsp를 호출
+		httpRequest.open("POST","./ajax/getMenus.jsp",true);  
+		httpRequest.send(null); // post방식일때 보내고싶은게 없다  / get ? 써서 보내고 
+		httpRequest.onreadystatechange = menuList; //callback 함수이름 
+		
+	}
+	
+	function menuList(){
+	
+			//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+			if(httpRequest.readyState == 4)
+			{	
+				if(httpRequest.status == 200)
+				{   
+					var datas = httpRequest.responseXML;
+					setMenus(datas);
+											
+				}
+				
+				else{ alert("실패: " + httpRequest.status); }
+			
+			}	
+	}
+	
+	function setMenus(datas){
+		
+		//1.root
+		var menuIDs = datas.getElementsByTagName("menuid");
+		var menuNames = datas.getElementsByTagName("menuname");
+		
+		var strHTML = "";
+		for(var i=0; i<menuIDs.length;i++){
+			//strHTML += "<a href='javascript:getBoardList(&quot;" + menuIDs[i].childNodes[0].nodeValue+ "&quot;);'>";
+			strHTML += "<a href='./list.jsp?selectedMenuID="+ menuIDs[i].childNodes[0].nodeValue +"'>"; //-----selectedMenuID
+			strHTML += "<span>"
+			strHTML += menuNames[i].childNodes[0].nodeValue;	
+			strHTML += "</span>"
+			strHTML += "</a>"
+		}
+		
+		document.getElementById("menus").innerHTML = strHTML;
+		
+		//getBoardList("M001"); // 메뉴가 다 만들어지고 나면 제일 처음에 이걸 만들어라?
+	}
+```
+
+---
+
+<content.jsp> - 목록에 있는 내용을 클릭했을때 화면
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+    <%
+    
+    	String selectedMenuID = request.getParameter("selectedMenuID"); // 게시판 클릭
+    	String strIDX = request.getParameter("idx"); // 삭제할 내용 idx
+    
+    	out.print(selectedMenuID +" - "+ strIDX);
+    	
+    	String strPrams = "?idx=" + strIDX + "&selectedMenuID=" + selectedMenuID; // //<=strPram >
+    %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>내용을 클릭했을때 화면</title>
+
+	<link rel="stylesheet" type="text/css" href="../CSS/board.css" /> 
+	
+	<script src="../JS/board2.js"></script>
+	
+	<script>
+	
+		function goDel(strPrams){
+			//var a =10;
+			location.href="./delete.jsp" + strPrams;  // //
+			
+		}
+		
+	</script>
+	
+</head>
+<!-- 복붙 내용을 클릭했을때 화면 -->
+<body onload="getMenus();">
+
+		<div id="wrap">
+		<div id="menus">
+			<span></span>
+		</div>
+		<div  id="bWrite">
+			<div id="bHead">
+				<div></div>
+				<div>
+					<!--<input type="button" value="글쓰기"  onclick="goWrite()"/> -->
+				</div>
+			</div>
+			<div id="bBoby">
+				<input type="button" value="삭제" onclick="goDel(<%=strPrams %>)"/>
+				<a href="./delete.jsp<%=strPrams %>">삭제</a>
+			</div>	
+			<div id="bBottom">
+			
+			</div>
+		</div>
+	</div>
+	
+
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/74da2b10-6ccf-4a12-942d-82bfcc1be3d7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/74da2b10-6ccf-4a12-942d-82bfcc1be3d7/Untitled.png)
+
+null-null 이 위에 떠있는 이유는 원래 저기가 삭제를 위한 글 목록 번호와 가 있는값인데  클릭을 해서 실행시킨 화면이 아니고 내가 ctrl+f11해서 띄운화면이라서 null이라고 뜨는 것 
+
+---
+
+<delete.jsp> - 글삭제를 위한
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ page import="java.sql.*" %> 
+
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+<!DOCTYPE html>
+
+<%
+
+	String strIDX = request.getParameter("idx");
+	String strSelectedMenuID = request.getParameter("selectedMenuID");
+	
+	//글삭제 데이터베이스에서 
+	
+	
+	String strMenuID = request.getParameter("menuid");
+	
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+	String strProcName= "{call PKG_BOARD.PROC_BOARD_DEL(?)}";
+  	String[] strParams = new String[1];
+  	strParams[0] = strIDX;
+  	
+  	
+  	DBConn.executeQuery(strProcName, strParams);
+  	
+  	response.sendRedirect("./list.jsp?selectedMenuID=" + strSelectedMenuID );
+  	
+	
+
+%>
+```
+
+---
+
+ajax 파일
+
+<getMenus.jsp> :  db에 있는 게시판 메뉴 목록을 불러오는 
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+	<% 
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strSql = "SELECT * FROM MENUS ORDER BY MENUID ASC";
+  	
+  	ResultSet rs = DBConn.getResultSet(strSql);
+  	
+  	String strXML = "<?xml version='1.0'?>";
+  	
+  	strXML += "<menus>";
+  	  while(rs.next()){
+  		strXML += "<menu>";
+	  		strXML += "<menuid>";
+	  		strXML += rs.getString("MENUID");
+	  		strXML += "</menuid>";
+	  		
+	  		strXML += "<menuname>";
+	  		strXML += rs.getString("MENUNAME");
+	  		strXML += "</menuname>";
+  		strXML += "</menu>";
+  		
+  	}
+  	strXML += "</menus>";
+  	
+  	//http를 활용해서 출력 
+	response.setContentType("text/xml");
+  	
+  	PrintWriter writer = response.getWriter();
+  	writer.print(strXML);
+  	
+	%>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/53b7d067-27c6-4d3c-91de-068c6db957fd/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/53b7d067-27c6-4d3c-91de-068c6db957fd/Untitled.png)
+
+<getBoardList.jsp> : db에 게시판 마다 있는 내용을 들고옴
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+	<% 
+	
+	String strMenuID = request.getParameter("menuid");
+	
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strSql = "SELECT * FROM BOARDS WHERE MEMUID='" + strMenuID + "'"; // 1~6 게시판
+  	
+	ResultSet rs = DBConn.getResultSet(strSql);
+  	
+	System.out.println(strSql);
+	
+  	String strXML = "<?xml version='1.0'?>";
+  	
+  	strXML += "<lists>";
+  	
+  	while(rs.next()){
+  		strXML += "<list>";
+	  		strXML += "<bnum>";
+	  		strXML += rs.getString("BNUM");
+	  		strXML += "</bnum>";
+	  		
+	  		strXML += "<title>";
+	  		strXML += rs.getString("TITLE");
+	  		strXML += "</title>";
+	  		
+	  		strXML += "<idx>";
+	  		strXML += rs.getString("IDX");
+	  		strXML += "</idx>";
+  		strXML += "</list>";
+  		
+  	}
+  	
+  	strXML += "</lists>";
+  	
+  	System.out.println(strXML);
+  	
+  	//http를 활용해서 출력 
+	response.setContentType("text/xml");
+  	
+  	PrintWriter writer = response.getWriter();
+  	writer.print(strXML);
+  	
+  	%>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/13101fff-73b4-4e05-9374-0350adb289cc/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/13101fff-73b4-4e05-9374-0350adb289cc/Untitled.png)
+
+getBoardList.jsp 인데 안에 내용 안뜨는게 맞다 왜냐하면 게시판을 클릭해서 불러온 내용이 없기 때문
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dc25b519-d25b-414a-9a58-31c3aca95178/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dc25b519-d25b-414a-9a58-31c3aca95178/Untitled.png)
+
+주소창에 게시판 id를 넣어주면 그 게시판에 있는 내용 불러오기 가능
+
+---
+
+---
+
+---
+
+ajax가 어떻게 실행되는가
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/18d014a3-f9d0-4c53-b4a5-e80283657569/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/18d014a3-f9d0-4c53-b4a5-e80283657569/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d3e26136-a6bd-47eb-88fc-31931df7c1e1/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d3e26136-a6bd-47eb-88fc-31931df7c1e1/Untitled.png)
+
+httpRequest.responseXML 에 들어있는 값을 datas에 넣고 
+
+여기 함수 실행
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/eb96f817-e190-4d21-85ad-ea88e6182c04/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/eb96f817-e190-4d21-85ad-ea88e6182c04/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/23fc4d50-3a30-49bb-b6a2-f2856f56cff5/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/23fc4d50-3a30-49bb-b6a2-f2856f56cff5/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/71bbe12b-8b96-4ac7-a5e9-9cacacb95ffe/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/71bbe12b-8b96-4ac7-a5e9-9cacacb95ffe/Untitled.png)
+
+---
