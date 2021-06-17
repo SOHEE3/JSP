@@ -1,0 +1,535 @@
+session -> web server (서버의 한 종류) < 소프트웨어 - 아파치
+
+server : 1대의 컴퓨터를 여러사람이 쓰게하는것
+
+server - naver : 서버는 a라는 사용자와 b라는 사용자 각각의 요청을 구분하고 그 요청자에게 정보를 돌려주는가?
+
+a -->
+b -->
+c -->
+d -->
+
+session  : 세션(Session)은 클라이언트와 웹 서버 간의 상태를 지속적으로 유지하는 방법을 말한다
+
+## ----------------------------------------------------------------
+server : 서버는 사용자에게 세션아이디를 하나씩 부여
+
+## session
+
+A :
+
+1-만약 세션이 끊어지면 서버는 새로운 세션을 만들어준다
+2-a가 접속을해서 일정시간동안(30분 등등 ) 아무짓도 하지 않으면 - c+F 해서
+
+## java안에도 session이라는 객체가 들어있따
+
+- 먼저 session은 jsp 내장 객체이기 때문에
+jsp에서는 따로 선언하지 않고도 세션을 사용할 수 있습니다.
+- getAttribute는 setAttribute 메소드를 호출해 속성을 무조건 먼저 설정해야한다 안하면 NULL을 리턴한다.
+getAttribute는 Object를 반환하기 때문에 앞에다가 형변환을 해주어야한다
+getParameter는 웹브라우저에서 전송받은 request 영역에서 name 값이 일치하는 것을 읽어온다.
+
+//[영역객체].setAttribute("이름",값);   -> 저장
+//[영영객체].getAttribute("이름");     -> 출력
+
+# **다중세션 삭제**
+
+**Logout : session.invalidate(); 주로 세션 삭제를 할때는 다중세션 삭제를 사용한**
+
+****
+
+**세션 유효 시간 설정**
+
+**session.setMaxInactiveInterval(60*60) : 3600초**
+
+fronController 들어오기 전부터 설저해두면 좋다. web.xml에 주로 사용한다. 개인프로젝트에 쓰고 싶으면 web.xml을 오버라이딩해서 사용.
+
+web.xml에서 Ctrl + F 해서 session-timeout을 확인해보면 30이라고 되어있다. 저긴 분단위이다. 30분 동안 아무 request가 없으면 logout된다는 뜻이다.
+
+![https://postfiles.pstatic.net/MjAyMTA2MTBfMjgy/MDAxNjIzMzMzNTg2NjE5.SRYchbmyCxliH4OQZsszHqlyTSDrKv8VQrLbcRqo1-wg.DlGoGV1888WpWUptVxeqLWLNobC8ZzzaKMoBmEuuveAg.PNG.jin_come_up/image.png?type=w773](https://postfiles.pstatic.net/MjAyMTA2MTBfMjgy/MDAxNjIzMzMzNTg2NjE5.SRYchbmyCxliH4OQZsszHqlyTSDrKv8VQrLbcRqo1-wg.DlGoGV1888WpWUptVxeqLWLNobC8ZzzaKMoBmEuuveAg.PNG.jin_come_up/image.png?type=w773)
+
+시간을 오버라이드하고 싶으면 내 개인 프로젝트의 web.xml에서 복사,붙여넣기를 해서 수정 한다.
+
+![https://postfiles.pstatic.net/MjAyMTA2MTBfMTMg/MDAxNjIzMzMzNzM2NDc5.g5l3lrcOPBJX8UzmauHiqEfIXMfv_HANoZ7eiMGEkB8g.Gk9z7QzfQy7UxAcO7lfJ-RyuWmvP-W21_oxyAkTD-aIg.PNG.jin_come_up/image.png?type=w773](https://postfiles.pstatic.net/MjAyMTA2MTBfMTMg/MDAxNjIzMzMzNzM2NDc5.g5l3lrcOPBJX8UzmauHiqEfIXMfv_HANoZ7eiMGEkB8g.Gk9z7QzfQy7UxAcO7lfJ-RyuWmvP-W21_oxyAkTD-aIg.PNG.jin_come_up/image.png?type=w773)
+
+```jsx
+
+```
+
+---
+
+---
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c083827d-079c-4430-83a0-e16373997073/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c083827d-079c-4430-83a0-e16373997073/Untitled.png)
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+	<% // 먼저 읽고 내려와야한다 onload
+		String strResult = request.getParameter("result"); //Login_ok 에서 3.
+		
+		
+		//1. strResult = 'Y' 로그인 성공
+		//2. strResult = 'N' 로그인 실패
+		//3. strResult = 'Null' 페이지 처음으로 이동
+	%>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	<script>
+	
+		function chkLogin(result){
+			
+			if(result == 'N'){		
+				
+				alert("아이디 또는 패스워드 불일치");
+			}
+		}
+	
+	</script>
+
+</head>
+<body onload=chkLogin('<%=strResult%>')>
+	<%
+	/* 로그인 세션 아이디 주소바뀌는거 테스트 
+		String strSID = session.getId();
+		
+		out.print(strSID);
+	*/
+	
+		
+		
+		String strUserID = (String)session.getAttribute("userID"); // 오브젝트타입을 스트링타입으로 형변환
+	%>
+	<%
+	
+	
+		//strResult =="Y" 이거 안된다 주소가 이건 같다면이다 /!strResult.equals("Y")){ // Y가 아니면! 
+		//if(!strResult.equals("Y")){ // Y가 아니면! 
+		if(strUserID == null){
+	%>
+	<div>
+		<form action="./01_Member/Login_ok.jsp" method="post">
+			<div>아이디 : <input type="text" name="userID"/></div>
+			<div>패스워드 : <input type="text" name="userPASS"/></div>
+			<div><input type="submit" value="로그인"/></div>
+		</form>
+	</div>
+	<%
+		} // if
+	
+		else{ %>
+	<div>
+		<form action="./01_Member/Logout_ok.jsp" method="post">
+		<div><%=strUserID %>로그인 성공 </div>
+		<div><input type="submit" value="로그아웃"/></div>
+		</form>
+	</div>
+	<% } %>
+</body>
+</html>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+<%
+	//로그인처리
+	//1. user id, 
+	
+	String strUserID = request.getParameter("userID");  // 변수
+	String strUserPass = request.getParameter("userPASS");
+	
+	//2. 아이디와 패스워드가 일치하는지 검사 
+	
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strProc= "{call PKG_MEMBER.PROC_LOGIN(?,?,?)}";
+  	
+  	String[] strParams = new String[2];
+  	strParams[0] = strUserID;
+  	strParams[1] = strUserPass;
+  	
+  	ResultSet rs = DBConn.getResultSet(strProc,strParams);
+  	
+  	rs.next();
+  	
+  	String Login_YN = rs.getString("LOGIN_YN");
+  	
+  	//3. Login_YN = 'Y' 이면 로그인 시켜주고 'M' 이면 아이디 또는 패스워드가 틀렸다고 메시지를 만들것이다
+  		
+  	if(Login_YN.equals("Y")){
+  		//로그인 - session
+  		
+  		
+  		session.setAttribute("userID", strUserID); // session변수 (세션변수이름,변수값) / 세션이 끊어지기 전까지만 userID가 존재한다 		
+  		session.setAttribute("userName", "김뚱땅"); // session변수2 예시
+  		response.sendRedirect("../INDEX.jsp?result=Y");
+  	}
+  	else{
+  		//로그인 실패 메시지를 띄울것 - index.jsp 로 돌려줄것
+  		response.sendRedirect("../INDEX.jsp?result=N");
+  	}
+  			
+  	
+  	
+%>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%
+
+	session.invalidate();  // 무효화
+	
+	response.sendRedirect("../INDEX.jsp?");
+	
+%>
+```
+
+---
+
+---
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/63c4a2a5-0bf2-4606-bb30-c60ced61c70c/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/63c4a2a5-0bf2-4606-bb30-c60ced61c70c/Untitled.png)
+
+자바에는 자료형이 많아서 == 주소값이 아니고 .equals(값)을 가져와야하는데
+자바스크립트는 자료형이 var 뿐이라서 == 써도 되는것임! 
+
+strResult =="Y"   :  Y와 주소가 같다면이다 — call by reference
+
+ ! strResult.equals("Y")  : 속성값 Y 가 아니면(!) 
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+	<% // 먼저 읽고 내려와야한다 onload
+		String strResult = request.getParameter("result"); //Login_ok 에서 3.
+	
+		//1. strResult = 'Y' 로그인 성공
+		//2. strResult = 'N' 로그인 실패
+		//3. strResult = 'Null' 페이지 처음으로 이동
+	%>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	<script>
+	
+		function chkLogin(result){
+			
+			if(result == 'N'){		
+				// 자바에는 자료형이 많아서 == 주소값이 아니고 .equals(값)을 가져와야하는데
+				// 자바스크립트는 자료형이 var 뿐이라서 == 써도 되는것임! 
+				
+				alert("아이디 또는 패스워드 불일치");
+			}
+		}	
+	</script>
+
+</head>
+<body onload=chkLogin('<%=strResult%>')>
+	<%
+	/* 로그인 세션 아이디 주소바뀌는거 테스트 
+		String strSID = session.getId();
+		
+		out.print(strSID);
+	*/
+	
+		
+		String strUserID = (String)session.getAttribute("userID"); // 오브젝트타입을 스트링타입으로 형변환
+	%>
+	<%
+	
+	
+		//strResult =="Y" 이거 안된다 이건 주소가 같다면이다 /!strResult.equals("Y")){ // Y가 아니면! 
+		//if(!strResult.equals("Y")){ // equals 값비교 Y가 아니면! 
+		if(strUserID == null){
+	%>
+	<div>
+		<form action="./01_Member/Login_ok.jsp" method="post">
+			<div>아이디 : <input type="text" name="userID"/></div>
+			<div>패스워드 : <input type="text" name="userPASS"/></div>
+			<div><input type="submit" value="로그인"/></div>
+		</form>
+	</div>
+	<%
+		} // if
+	
+		else{ %>
+	<div>
+		<form action="./01_Member/Logout_ok.jsp" method="post">
+		<div><%=strUserID %>로그인 성공 </div>
+		<div><input type="submit" value="로그아웃"/></div>
+		</form>
+	</div>
+	<% } %>
+</body>
+</html>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+<%
+	//로그인처리
+	//1. user id, user pass
+	
+	String strUserID = request.getParameter("userID");  // 변수
+	String strUserPass = request.getParameter("userPASS");
+	
+	//2. 아이디와 패스워드가 일치하는지 검사 
+	
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strProc= "{call PKG_MEMBER.PROC_LOGIN(?,?,?)}";
+  	
+  	String[] strParams = new String[2];
+  	strParams[0] = strUserID;
+  	strParams[1] = strUserPass;
+  	
+  	ResultSet rs = DBConn.getResultSet(strProc,strParams);
+  	
+  	rs.next();
+  	
+  	String Login_YN = rs.getString("LOGIN_YN");
+  	
+  	//3. Login_YN = 'Y' 이면 로그인 시켜주고 'M' 이면 아이디 또는 패스워드가 틀렸다고 메시지를 만들것이다
+  		
+  	if(Login_YN.equals("Y")){
+  		//로그인 - session
+  		
+  		
+  		session.setAttribute("userID", strUserID); // session변수 (세션변수이름,변수값) / 세션이 끊어지기 전까지만 userID가 존재한다 		
+  		session.setAttribute("userName", "김뚱땅"); // session변수2 예시
+  		//response.sendRedirect("../INDEX.jsp?result=Y");
+  		response.sendRedirect("../06_AjaxBoard/list.jsp"); // 로그인 성공시 리스트페이지에 접속 
+  	}
+  	else{
+  		//로그인 실패 메시지를 띄울것 - index.jsp 로 돌려줄것
+  		response.sendRedirect("../INDEX.jsp?result=N");
+  	}
+  			
+  	
+  	
+%>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%
+
+	session.invalidate();  // 무효화
+	
+	response.sendRedirect("../INDEX.jsp?");
+	
+%>
+```
+
++ list.jsp 와 write.jsp에 접속하면 안되니까 로그인 페이지를 띄우는 함수를 추가해준다
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+<%
+
+	//로그인이 되어 있는지 판단
+	String strUserID = (String)session.getAttribute("userID");
+	//String strUserName = (String)session.getAttribute("userName");
+	//System.out.println(strUserName);
+
+	if(strUserID == null){
+		response.sendRedirect("../INDEX.jsp");
+		
+	}
+
+	String selectedMenuID2 = request.getParameter("selectedMenuID"); // 첫페이지 null 값 / String은 객체다 객체는 콜바이래퍼런스 참조없음 널
+	//String str = ""; // null /// -------board2.js -0---
+	
+	if(selectedMenuID2 == null){//==참조값이 없니 //equals(str) 하면 널 / equals() 는 안의 값을 비교한다. / 주소는 다른데 안에있는 string 값은 같니?
+		selectedMenuID2 = "M001";
+	}
+	
+	//System.out.println(selectedMenuID2);
+	
+%>    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	
+		<link rel="stylesheet" type="text/css" href="../CSS/board.css" />  <!-- css,js파일 -->
+									
+		<script src="../JS/board.js"></script> 
+		<!-- board.js를 선언해서 list와 board 페이지 전역변수 공유됨  -->
+
+	<script>
+		var clickMenuID = ""; // - 전역변수로 
+		// 넘어갈때 
+		function goWrite(){
+			//var clickMenuID = ""; // 이값을 어떻게 찾을것인가?
+			location.href = "./write.jsp?selectedMenuID=" + clickMenuID; // 띄우면 안됨 - 띄우고싶으면 post방식으로 보내야함
+		
+		}
+	
+	</script>
+
+</head>
+<body onload="getMenus('<%=selectedMenuID2%>');">
+	<div id="wrap">
+		<div id="menus">
+			<span></span>
+		</div>
+		<div  id="boards">
+			<div id="bHead">
+				<div></div>
+				<div>
+					<input type="button" value="글쓰기"  onclick="goWrite()"/>
+				</div>
+			</div>
+			<div id="bBoby">
+			
+			</div>
+			<div id="bBottom">
+			
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+```
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+    <%
+    
+	  //로그인이 되어 있는지 판단 -- 모든페이지에 있어야함 -------------------
+	  	String strUserID = (String)session.getAttribute("userID");
+ 
+	
+	  	if(strUserID == null){
+	  		response.sendRedirect("../INDEX.jsp");
+	  		
+	  	}
+	  	//--------------------------------------------------------
+	  	
+    	String selectedMenuID = request.getParameter("selectedMenuID");
+    
+    	  
+    
+    %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<link rel="stylesheet" type="text/css" href="../CSS/board.css" /> 
+	
+	<script src="../JS/board2.js"></script>
+	
+</head>
+<!-- 복붙 -->
+<body onload="getMenus();">
+
+		<div id="wrap">
+		<div id="menus">
+			<span></span>
+		</div>
+		<div  id="bWrite">
+			<div id="bHead">
+				<div></div>
+				<div>
+					<!--<input type="button" value="글쓰기"  onclick="goWrite()"/> -->
+				</div>
+			</div>
+			<div id="bBoby">
+				<div id="writeForm">
+					<form action="write_ok.jsp" method="post">
+						<div>
+							<span class="left">글제목</span>
+							<span class="right">
+								<input type="text" name="title"/>
+							</span>					
+						</div>
+						<div>
+							<span class="left">글내용</span>
+							<span class="right">
+								<textarea name="content" cols="60" rows="12"></textarea>
+							</span>
+						</div>
+						<div> 
+							<span>메뉴아이디</span>
+							<span><input type="text" name="selectedMenuID" value="<%=selectedMenuID%>"></span>
+						</div>
+						<div>
+							<span>작성자</span>
+							<span><input type="text" name="userID" value="<%=strUserID %>" readonly /></span>
+						</div>
+						<div>
+							<input type="submit" value="확인" />
+						</div>
+					</form>
+				</div>
+			</div>
+			<div id="bBottom">
+			
+			</div>
+		</div>
+	</div>
+	
+
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d7eb10a4-e916-4cf5-8acc-886870793849/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d7eb10a4-e916-4cf5-8acc-886870793849/Untitled.png)
+
+list.jsp에서 실행했지만 로그인 페이지가 뜬다 
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/32e0dddd-d89f-4328-a797-ed94e77f58c8/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/32e0dddd-d89f-4328-a797-ed94e77f58c8/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/44a37f79-fc20-4158-8004-00ea0c1ec0a0/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/44a37f79-fc20-4158-8004-00ea0c1ec0a0/Untitled.png)
+
+로그인 실패
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9b24ad8e-15fa-4812-8ad8-ae45c7077daa/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9b24ad8e-15fa-4812-8ad8-ae45c7077daa/Untitled.png)
+
+로그인 성공
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ca755ce0-bf3d-420c-bde0-3666acfae646/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ca755ce0-bf3d-420c-bde0-3666acfae646/Untitled.png)
+
+로그인 성공시
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1ed74b17-8774-4d9d-9983-be5a93e99907/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1ed74b17-8774-4d9d-9983-be5a93e99907/Untitled.png)
+
+#글쓰기 누르면  Mem001의 작성자로 써진다 + readonly를 썻기때문에 수정도 불가하다 
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dc60d668-79d7-4c47-8219-7c85234dc696/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dc60d668-79d7-4c47-8219-7c85234dc696/Untitled.png)
+
+새로 주소넣고 접속해도 내가 전에 로그인한 세션이 남아있기 때문에 새탭으로 접속할지라도 로그인창이 뜨지않고 바로 다시 list 목록#이 뜨게된다
