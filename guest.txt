@@ -1,0 +1,304 @@
+----------write.jsp---------------------------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<script>
+		
+		
+	var httpRequest = null;
+	
+	function getHttpRequest(){
+		
+		//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+		 httpRequest = new XMLHttpRequest();
+		
+	}
+	
+	function getList(){
+		
+		getHttpRequest();
+		
+		var gid = document.getElementById("id").value;
+		var gtilte = document.getElementById("title").value;
+		var param = "id=" + gid + "&title=" + gtilte;
+		
+		
+		//server에 있는 list.jsp를 호출
+		httpRequest.onreadystatechange = callback; //callback 함수이름
+		httpRequest.open("POST","./write_ok.jsp?" + param ,true); 
+		httpRequest.send(null); 
+		
+	}
+	
+	function callback(){
+		//서버로부터 응답이 왔으므로 알맞은 작업을 수행
+		if(httpRequest.readyState == 4)
+		{
+			if(httpRequest.status == 200)
+			{
+				
+				alert("저장에 성공했습니다");
+				
+			}
+			else{ alert("실패: " + httpRequest.status); }
+		
+		}
+		
+	}
+	
+	</script>
+
+</head>
+<body>
+	<%
+	/* String str = "<a href='http:javascript:test();'>안녕</a>";
+		out.print(str); */
+	%>
+	<form action = "./write_ok.jsp" method="post">  
+		<div>
+			아이디 : <input type="text" name = "id" id="id"/>
+		</div>
+		<div>
+			제목 : <input type="text" name = "title" id="title"/>
+		</div>
+		<div>
+			<input type="submit" value="확인" />
+			<input type="button" value="ajax" onclick="getList();"/>
+		</div>
+	</form>
+</body>
+</html>
+--------------------------------------------------------
+---------write_ok.jsp-----------------------------------
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+    
+<%
+	
+	String strID = request.getParameter("id");
+	String strTitle = request.getParameter("title");
+	System.out.print(strID + strTitle );
+	
+	//값을 받아서 db에 저장한다.
+		
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);
+  	
+  	String strSql = "INSERT INTO GUEST(GID, GTITLE)";
+		  	strSql += "VALUES('"+ strID +"',";
+		  	strSql +=  "'"+ strTitle +"')";
+  	
+  	DBConn.executeQuery(strSql);
+  	
+  	response.sendRedirect("./list.jsp");  // 돌아오는 페이지 
+  	
+  	
+%>
+    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+</body>
+</html>
+
+---------------------------------------------
+-----list.jsp-------------------------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+	
+<%
+	//DB
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+	DBConn.setDBInfo(dbInfos);
+	
+	String strSql = "SELECT GID, GTITLE FROM GUEST ORDER BY GID DESC";
+	
+	ResultSet rs = DBConn.getResultSet(strSql);
+	
+	rs.next();
+
+
+%>	
+	
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<table width="600" cellpadding="0" cellspacing="0" align="center" border="1">
+		<tr>
+			<td width="100" height="30" align="center">
+				아이디
+			</td>
+			<td width="100" height="30" align="center">
+				제목
+			</td>
+		</tr>
+		<%
+			while(rs.next()){
+		%>
+		<tr>
+			<td width="100" height="30" align="center">
+				<%=rs.getString("GID") %>
+			</td>
+			<td width="100" height="30" align="center">
+				<a href="./content.jsp?gid=<%=rs.getString("GID") %>"><%=rs.getString("GTITLE") %></a>
+			</td>
+		</tr>
+		<%
+			}
+		%>
+	</table>
+</body>
+</html>
+
+----------------------------------------------
+-----------content.jsp------------------
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+<%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+    
+<%
+	
+	String strGID = request.getParameter("gid");
+		
+	//값을 받아서 db에 저장한다.
+		
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);  
+  	
+  	String strSql = "SELECT GID, GTITLE FROM GUEST WHERE GID= '" + strGID +  "'";
+  	
+  	ResultSet rs = DBConn.getResultSet(strSql);
+  	
+  	rs.next();
+  	
+  	
+  	%>
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<script>
+	
+		function goUpdate(){
+			
+			
+			document.getElementById("updateForm").action = "./update.jsp";
+			document.getElementById("updateForm").method = "get";
+			document.getElementById("updateForm").submit();
+			
+			
+		}
+		
+	</script>
+
+</head>
+<body>
+	<div>
+		아이디 : <%=rs.getString("GID") %>
+	</div>
+	<div>
+		제목 : <%=rs.getString("GTITLE") %>
+	</div>
+	<div>
+		<a href="./list.jsp">리스트로</a>
+		<a href="delete.jsp?gid=<%=rs.getString("GID") %>"><input type="button" value="삭제" /></a>
+		
+		<div>
+			<form action = "update.jsp" method="get">
+				<input type="hidden" name="gid" value="<%=rs.getString("GID") %>" />
+				<input type="submit" value="수정" />
+			</form>
+		</div>
+		<div>
+			<form name="updateForm" id="updateForm"> 
+				<input type="hidden" name="gid" value="<%=rs.getString("GID") %>" />
+			</form>
+			<a href="javascript:goUpdate()">수정</a>
+			<span onclick="goUpdate()">수정</span>
+		</div>
+	</div>
+</body>
+</html>
+----------------------------------------
+-------delete.jsp-------------------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+ <%@ page import="java.sql.*" %> 
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn" class="PKG_DB.DBhandle" scope="page"/>
+	
+	<% 
+	
+	String strGID = request.getParameter("gid");
+	
+	//값을받아서 db에서 삭제한다
+	String[] dbInfos = new String[3];
+  	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+  	dbInfos[1] = "scoredb";
+  	dbInfos[2] = "1";
+  	
+  	DBConn.setDBInfo(dbInfos);   
+  	
+  	String strSql = "DELETE FROM GUEST WHERE GID='" + strGID+ "'";
+    
+  	DBConn.executeQuery(strSql);
+  	
+  	//response.sendRedirect("./list.jsp");
+  	
+   %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+</head>
+<body>
+	글이 정확하게 삭제되었습니다. <!-- 내가 쓴글을 확인시키고 돌아가게 만든다 -->
+	<a href="./list.jsp">리스트로 돌아가기</a>
+</body>
+</html>
