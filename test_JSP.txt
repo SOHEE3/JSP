@@ -1,0 +1,601 @@
+test_ajax------------------------------------------------------------------
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import = "java.sql.*" %>
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn_01" class="PKG_DB_TEST.DBhandle" scope="page"/>
+	
+<%
+	//String strMENUID = request.getParameter(""); 
+
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+	DBConn_01.setDBInfo(dbInfos);
+	
+	String strSql = "SELECT * FROM MENUS ORDER BY MENUID ASC";
+	
+	ResultSet rs = DBConn_01.getResultSet(strSql);
+	
+	//XML
+	
+	String strXML = "<?xml version='1.0'?>";
+	
+	strXML += "<rows>";
+	
+	while(rs.next()){
+		
+		strXML += "<row>";
+		
+		strXML += "<title>";
+		strXML += rs.getString("MENUID");
+		strXML += "</title>";
+		
+		strXML += "<menuname>";
+		strXML += rs.getString("MENUNAME");
+		strXML += "</menuname>";
+		
+		strXML += "</row>";
+		
+	}	
+	strXML += "</rows>";
+	
+	//System.out.println(strXML);
+	
+	//http를 활용해서 출력 
+		response.setContentType("text/xml");
+	  	
+	  	PrintWriter writer = response.getWriter();
+	  	writer.print(strXML);
+	
+	
+%>
+
+---------------------------------------------------------------
+-------test_ajax_content-------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import = "java.sql.*" %>
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn_01" class="PKG_DB_TEST.DBhandle" scope="page"/>
+
+<%
+	String strMenuID = request.getParameter("menuid");
+	
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+	DBConn_01.setDBInfo(dbInfos);
+	
+	String strSql = "SELECT * FROM BOARDS WHERE MEMUID ='"+ strMenuID +"'";
+	
+	//System.out.print(strMenuID);
+	
+	ResultSet rs = DBConn_01.getResultSet(strSql);
+	
+	//XML
+	
+	String strXML = "<?xml version='1.0'?>";
+	
+	strXML += "<rows>";
+	
+	while(rs.next()){
+		strXML += "<row>";
+		strXML += "<idx>";
+		strXML += rs.getString("IDX");
+		strXML += "</idx>";
+		
+		strXML += "<bnum>";
+		strXML += rs.getString("BNUM");
+		strXML += "</bnum>";
+		
+		strXML += "<title>";
+		strXML += rs.getString("TITLE");
+		strXML += "</title>";
+		
+		strXML += "<memid>";
+		strXML += rs.getString("MEMID");
+		strXML += "</memid>";
+		
+		strXML += "<regdate>";
+		strXML += rs.getString("REGDATE");
+		strXML += "</regdate>";
+		strXML += "</row>";
+	}
+
+	strXML += "</rows>";
+	
+	//System.out.println(strXML);
+	
+	//http를 활용해서 출력 
+			response.setContentType("text/xml");
+		  	
+		  	PrintWriter writer = response.getWriter();
+		  	writer.print(strXML);
+	
+%>
+
+-----------------------------------------------
+----test_list.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    
+ <%
+ 	
+ 	String stridx = request.getParameter("idx");
+ 
+ 	String strPrams = "?idx=" + stridx ;
+ %>   
+    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<style>
+		#board_Menu{
+			width:2000px;
+			clear:both;	
+			border: 1px solid #999999;	
+		
+		}
+		
+		#board_Menu span{
+			width:300px;
+			border: 1px solid #999999;
+			padding: 10px 0px 10px 0px;
+			text-align:center;	
+			float:left;	
+
+		}
+		
+		#row{
+			clear:both;	
+		}
+	
+		#board_Con {
+		
+			
+		}
+		
+		.row{
+			display:block;
+			width:1000px;
+			font-size:14px;
+			padding:3px 0px 3px 0px;
+			font-weight:bolder;
+			border: 1px solid red;
+			text-align:center;
+				
+		}
+		
+		.row span{
+			width:245px;
+			display:block;
+			
+		}
+		
+		.row_2{
+			
+			display:block;
+			width:800px;
+			font-size:15px;
+			padding:3px 0px 3px 0px;
+			font-weight:bolder;
+			border: 1px solid black;
+			text-align:left;
+			clear:both;
+
+		
+		}
+		
+		.row_2 span{
+			
+			display:block;
+			<!--border: 1px solid red;-->
+			clear:both;
+			
+		}
+		
+		
+		.row_2_2 {
+			
+			display:block;
+			width: 790px;
+			height: 500px;
+			border: 1px solid #8C8C8C;
+			border-width: 3px 0px 0px 0px; 
+			font-size:18px;
+			
+		
+		
+		}
+	
+	</style>
+
+	<script>
+		
+		var httpRequest = null;
+		var httpRequest2 = null;
+		var httpRequest3 = null;
+		var httpRequest4 = null;
+		
+		function getHttpRequest(){	
+			
+			//자바스크립트 안에 있는 내장객체 . 우리가만든거 x
+			return new XMLHttpRequest();
+			//httpRequest = new XMLHttpRequest();
+			//getMenus(httpRequest)
+			
+		}
+		
+		function getMenus(){ 
+			//httpRequest=a
+			httpRequest = getHttpRequest();
+			//server에 있는 list.jsp를 호출
+			httpRequest.onreadystatechange = menuList; //callback 함수이름 
+			httpRequest.open("POST","./TEST_Ajax.jsp",true);  
+									 
+			httpRequest.send(null); 
+			//./새
+			//../새
+		}
+		
+		function menuList(){
+				//alert(httpRequest.readyState);
+				
+				if(httpRequest.readyState == 4)
+				{	
+					if(httpRequest.status == 200)
+					{   
+						var datas_MENU = httpRequest.responseXML;
+						setMenus(datas_MENU);
+									
+					}
+					
+					else{ alert("실패: " + httpRequest.status); }
+				
+				}	
+		}
+		
+		function setMenus(datas_MENU){
+			
+			//var menuTITLE = "";
+			//var menuNAME = "";
+			
+			//여러개가 들어올거니까 배열로 받고 
+			var strTitles = datas_MENU.getElementsByTagName("title");
+			var strMenunames = datas_MENU.getElementsByTagName("menuname");
+			//alert(strMenunames.length);
+			
+			var strHTML = "";
+		
+			for(var i=0; i<strTitles.length ;i++){  // 길이만큼 불러와야하는데..
+			
+				menuTITLE = strTitles[i].childNodes[0].nodeValue;
+				menuNAME = strMenunames[i].childNodes[0].nodeValue;
+			
+				strHTML += "<a href = 'javascript:getMenus2(&quot;"+ menuTITLE +"&quot; );'>";
+				strHTML += "<span>" 
+				strHTML += menuNAME; 
+				strHTML += "</span>"
+				strHTML += "</a>" 
+				
+				/* 	strHTML += "<span>" 
+					strHTML += 	menuNAME		
+					strHTML += "</span>"
+					 */
+						
+			}
+			
+			document.getElementById("board_Menu").innerHTML = strHTML;
+			
+		
+		}
+		
+	  	
+	 	//클릭
+		
+		function getMenus2(selectedMenuID){ 
+			//alert(selectedMenuID);
+		 	httpRequest2 = getHttpRequest();
+			
+			httpRequest2.onreadystatechange = menuList2; //callback 함수이름 			
+			httpRequest2.open("POST","./TEST_Ajax_Content.jsp?menuid="+selectedMenuID, true);  									 
+			httpRequest2.send(null);   
+		
+		}
+		
+		 function menuList2(){			
+			//alert("menuList2");
+			if(httpRequest2.readyState == 4)
+			{	
+				if(httpRequest2.status == 200)
+				{   
+					var datas_Content = httpRequest2.responseXML;
+					chk_Content(datas_Content);
+					
+				}
+				
+				else{ alert("실패: " + httpRequest2.status); }
+			
+			}	
+		}
+		
+		 
+		function chk_Content(datas_Content){
+			
+			var strIdxs = datas_Content.getElementsByTagName("idx");			
+			var strBnums = datas_Content.getElementsByTagName("bnum");
+			var strTitles = datas_Content.getElementsByTagName("title");
+			var strMemIDs = datas_Content.getElementsByTagName("memid");
+			var strRegdates = datas_Content.getElementsByTagName("regdate");
+			
+			var strHTML="";
+			
+			strHTML += "<table style='border:1px solid black' class='row'>";
+			strHTML += "<div>";
+			strHTML += "<tr>";
+			strHTML += "<td><span style='width:50px'>글번호</span></td>"; 
+			strHTML += "<td><span style='width:500px'>글제목</span></td>"; 
+			strHTML += "<td><span style='width:200px'>작성자</span></td>"; 
+			strHTML += "<td><span style='width:245px'>작성일</span></td>";
+			strHTML += "</tr>";
+			strHTML += "</div>";
+			strHTML += "</table>";
+			
+			for(var i=0; i<strBnums.length ;i++){
+				
+				menuIDX2 = strIdxs[i].childNodes[0].nodeValue;
+				menuBNUM2 = strBnums[i].childNodes[0].nodeValue;
+				menuTITLE2 = strTitles[i].childNodes[0].nodeValue;
+				menuMEMID2 = strMemIDs[i].childNodes[0].nodeValue;
+				menuREGDATE2 = strRegdates[i].childNodes[0].nodeValue;
+				
+				strHTML += "<table style='border:1px solid black' class='row' >";
+				strHTML += "<div>";
+				strHTML += "<tr>";
+				strHTML += "<td><span style='width:50px'>" + menuBNUM2 + "</span></td>"; 
+				
+			//	strHTML += "<td><span style='width:500px'><a href='javascript:getMenus3()'>"+ menuTITLE2 +"</a></span></td>"; 
+				
+				strHTML += "<td><span style='width:500px'><a href='javascript:getMenus3(&quot;"+ menuIDX2 +"&quot;);'>"+ menuTITLE2 +"</a></span></td>"; 
+				
+				strHTML += "<td><span style='width:200px'>" + menuMEMID2 +"</span></td>"; 
+				strHTML += "<td><span style='width:245px'>"+ menuREGDATE2 +"</span></td>";
+				strHTML += "</tr>";
+				strHTML += "</div>";
+				strHTML += "</table>";
+				
+			}  
+			
+			document.getElementById("board_Con").innerHTML = strHTML;		
+		}
+	     
+		
+	 	//--글제목 클릭하면 내용보이게 --------------------------------------
+	 	
+		
+	 	function getMenus3(selectedIdx){ 
+	 		
+		 	httpRequest3 = getHttpRequest();
+			
+			httpRequest3.onreadystatechange = menuList3; //callback 함수이름 			
+			httpRequest3.open("POST","./TEST_Ajax_realContent.jsp?menuidx=" + selectedIdx , true);  									 
+			httpRequest3.send(null);   
+		
+		}
+		
+		 function menuList3(){			
+			//alert("menuList3");
+			if(httpRequest3.readyState == 4)
+			{	
+				if(httpRequest3.status == 200)
+				{   
+					var datas_realContent = httpRequest3.responseXML;
+					chk_realContent(datas_realContent);
+					
+				}
+				
+				else{ alert("실패: " + httpRequest3.status); }
+			
+			}	
+		}
+		
+		 
+		  function chk_realContent(datas_realContent){
+			 
+		  
+			 var strIDXs = datas_realContent.getElementsByTagName("idx");
+			 var strTitles = datas_realContent.getElementsByTagName("title");
+			 var strContents = datas_realContent.getElementsByTagName("content");
+			 	//alert(strIDXs.length);
+			
+			 var strHTML = ""; 
+			 
+			 strHTML += "<table style='border:1px solid #ededed' class='row_2'>";
+			 strHTML += "<tr>";
+			 strHTML += 	"<td>";
+			 strHTML += 		"<span style='width:200px'>글번호</span>";
+			 strHTML += 	"</td>";
+			 strHTML += 	"<td>";
+			 strHTML += 		"<span style='width:580px'>글제목</span>";
+			 strHTML += 	"</td>";			 
+			 strHTML += "</tr>";
+		/* 	 strHTML += "<tr>";
+			 strHTML += 	"<td>";	
+			 strHTML += 		"<span style='width:600px'>글내용</span>";
+			 strHTML += 	"</td>";
+			 strHTML += "</tr>"; */
+			 strHTML += "</table>"; 
+			 
+			 for( var i=0; i<strIDXs.length;i++){
+				 
+				 conIDX = strIDXs[i].childNodes[0].nodeValue;
+				 conTITLE = strTitles[i].childNodes[0].nodeValue;
+				 conContent = strContents[i].childNodes[0].nodeValue;
+				 
+				 strHTML += "<table style='border:1px solid #ededed' class='row_2'>";
+				 
+				 strHTML += "<tr>";
+				 strHTML += 	"<td>";
+				 strHTML += 		"<span style='width:200px' >"+ conIDX +"</span>";
+				 strHTML += 	"</td>";
+				 strHTML += 	"<td>";
+				 strHTML += 		"<span style='width:580px'>"+ conTITLE +"</span>";
+				 strHTML += 	"</td>";			 
+				 strHTML += "</tr>";
+				 strHTML += "<tr>";
+				 strHTML += 	"<td>";	
+				 strHTML += 		"<span class='row_2_2'>" + conContent +"</span>";
+				 strHTML += 	"</td>";
+				 strHTML += "</tr>";
+				 
+				 
+				 strHTML += "<tr>";
+				 strHTML += 	"<td>";	
+				 strHTML += 		"<span style='border: 1px solid #ededed;border-width: 1px 0px 0px 0px'><input type='button' value='삭제' onclick=''/></span>";
+				 strHTML += 	"</td>";
+				 strHTML += "</tr>";
+				 
+				 strHTML += "</table>";
+				 
+			 }
+			 
+			 document.getElementById("board_Con").innerHTML = strHTML;
+		 }  
+		  
+		 // 삭제
+		 
+		 function deleteContent(){
+			 
+			 
+			 
+		 }
+		 
+	</script>
+</head>
+<body onload="getMenus();">
+	<div id="wrap">
+		<div id="board_Menu">
+			<span></span>
+		</div>
+		<div id="row"></div>
+		<div id="board_Con">
+		
+		</div>
+	<!-- 	<div id="">
+			<input type="button" value="삭제" onclick=""/>
+		</div> -->
+	</div>
+</body>
+</html>
+-----------------------------
+------test_delete,jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+ 	<jsp:useBean id="DBConn_01" class="PKG_DB_TEST.DBhandle" scope="page"/>
+<%
+
+	String strIDX = request.Parameter("idx");
+
+	//값을받아서 db에서 삭제한다
+	String[] dbInfos = new String[3];
+	dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+	dbInfos[1] = "scoredb";
+	dbInfos[2] = "1";
+	
+	DBConn_01.setDBInfo(dbInfos); 
+	
+	String strProc = "{call PKG_BOARDS.PROC_BOARD_DEL(?)}";
+	
+	String[] strParams = new String[1];
+	strParams[0] = strIDX;
+	
+	DBConn_01.executeQuery(strProc, strParams);
+
+	
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+</head>
+<body>
+	글이 정확하게 삭제되었습니다. 
+	<a href="./TEST_list.jsp">리스트로 돌아가기</a>
+</body>
+</html>
+--------------------------------
+----test_ajax_realContent.jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import = "java.sql.*" %>
+<%@ page import= "java.io.PrintWriter" %>
+	<jsp:useBean id="DBConn_01" class="PKG_DB_TEST.DBhandle" scope="page"/>
+
+	<%
+		String stridx = request.getParameter("menuidx");
+	
+		String[] dbInfos = new String[3];
+		dbInfos[0] = "jdbc:oracle:thin:@localhost:1521:xe";
+		dbInfos[1] = "scoredb";
+		dbInfos[2] = "1";
+		
+		DBConn_01.setDBInfo(dbInfos);
+		
+		String strSql = "SELECT * FROM BOARDS WHERE IDX='" + stridx+ "'"; 
+		
+		ResultSet rs = DBConn_01.getResultSet(strSql);
+		
+		//XML
+		
+		String strXML = "<?xml version='1.0'?>";
+		
+		strXML += "<rows>";
+		
+		while(rs.next()){
+			
+			strXML += "<row>";
+			
+			strXML += "<idx>";
+			strXML += rs.getString("IDX");
+			strXML += "</idx>";
+			
+			strXML += "<title>";
+			strXML += rs.getString("TITLE");
+			strXML += "</title>";
+			
+			strXML += "<content>";
+			strXML += rs.getString("CONTENTS");
+			strXML += "</content>";
+						
+			strXML += "</row>";
+			
+		}
+		
+		strXML += "</rows>";
+		
+		//System.out.println(strXML);
+		
+		//http를 활용해서 출력 
+		response.setContentType("text/xml");
+	  	
+	  	PrintWriter writer = response.getWriter();
+	  	writer.print(strXML);
+
+		
+		
+	%>
