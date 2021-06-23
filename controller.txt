@@ -1,0 +1,406 @@
+-----list2-----
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+    
+<%@ page import="java.sql.*" %>  
+<%@ page import="java.util.ArrayList" %>  
+<%@ page import="PKG_DAO.*" %>   
+
+<%
+
+	
+
+	ArrayList<listDAO> arr = (ArrayList<listDAO>)request.getAttribute("list");
+	ArrayList arr2 = (ArrayList)request.getAttribute("list2");
+	ArrayList<MemberDAO> members = (ArrayList<MemberDAO>)request.getAttribute("members");
+
+
+
+%>    
+    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+<style>
+
+	span{
+	
+		display:block;
+		width:200px;
+		height:25px;
+		padding:8px 0px 0px 0px;
+		text-align:center;
+		border:1px solid #444444;
+		float:left
+	
+	}
+
+	#list{
+		clear:both;
+	}
+</style>
+
+<script>
+	function go(){
+		
+		document.getElementById("listForm").submit();
+		
+	}
+</script>
+
+</head>
+<body>
+	<div id="">
+
+		
+		<div>
+		<form name="listForm" action="/ServBoard/BoardUpdate" method="post" id="listForm">
+		<table border="1" cellpadding="0" cellspacing="0" width="600">
+		<tr>
+			<td width="50" height="30" align="center">
+				<input type="checkbox" name="chk" />
+			</td>
+			<td width="100" height="30" align="center">
+				번호
+			</td>
+			<td width="350" height="30" align="center">
+				제목
+			</td>
+			<td width="150" height="30" align="center">
+				담당자
+			</td>
+			<td width="0" height="30" align="center">
+				
+			</td>
+		</tr>
+		<%
+			for(int i=0;i<arr2.size();i++){
+				
+			listDAO row = (listDAO)arr2.get(i);
+			
+			String bnum = row.getBnum();
+			String title = row.getTitle();
+			String idx = row.getIdx();
+			String admin = row.getAdmin();
+			
+			listDAO row2 = arr.get(i);
+			String bnum2 = row2.getBnum();
+			String title2 = row2.getTitle();
+			String admin2 = row.getAdmin();
+			
+				
+		%>
+		
+			<tr>
+				<td width="50" height="30" align="center">
+				<input type="checkbox" name="chk" />
+				</td>
+				<td width="100" height="30" align="center">
+					<%=bnum %>
+				</td>
+				<td width="350" height="30" align="center">
+					<a href="/ServBoard/BoardContent?idx=<%=idx%>"><%=title%></a>
+				</td>
+				<td width="150" height="30" align="center">
+					<select name="admin">
+							<option value=''>선택하세요</option>
+						<%
+							for(int j=0;j<members.size();j++){
+							
+							MemberDAO member = members.get(j);
+							String memID = member.getMemID();
+							String memName = member.getMemName();
+						%>
+						<%
+								if(memID.equals(admin)){
+						%>
+								<option value='<%=memID%>' selected><%=memName %></option>
+						<%	
+								}//if
+								else{
+						%>
+								<option value='<%=memID%>'><%=memName %></option>
+						<%			
+								}//else
+							} //for
+						
+						%>
+					</select>
+				</td>
+				<td width="0" height="30" align="center">
+					<input type="hidden" name="idx" value="<%=idx %>" />
+				</td>
+			</tr>
+		
+		<%
+			}
+		%>
+		</table>
+		</form>
+		</div>
+		<div>
+			<input type="button" value="저장" onclick="go();"/>
+			<input type="button" value="삭제" onclick="del();"/>
+		</div>
+	</div>
+</body>
+</html>
+----------------------------
+--listCont-------
+
+package PKG_Board;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_DAO.MemberDAO;
+import PKG_DAO.listDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/BoardList")
+public class listController extends HttpServlet 
+{
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		Connection con;
+		
+		try {
+			
+			String strURL = request.getParameter("strURL");
+			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "board", "1");
+		
+			String strProcName2 = "{call PKG_BOARD.PROC_BOARD_SEL(?,?,?)}";
+			CallableStatement csmt2 = con.prepareCall(strProcName2);
+			csmt2.setString(1, "LIST");
+			csmt2.setString(2, "");
+			csmt2.registerOutParameter(3, OracleTypes.CURSOR);
+			
+			csmt2.execute();
+			
+			ResultSet rs = (ResultSet)csmt2.getObject(3);
+			
+			ArrayList<listDAO> arr = new ArrayList<listDAO>();
+			ArrayList arr2 = new ArrayList();
+			while(rs.next()){
+				
+				listDAO list = new listDAO();
+				list.setIdx(rs.getString("IDX"));
+				list.setTitle(rs.getString("TITLE"));
+				list.setContents(rs.getString("CONTENTS"));
+				list.setBnum(rs.getString("BNUM"));
+				list.setAdmin(rs.getString("ADMIN"));
+				arr.add(list);
+				arr2.add(list);
+			}
+			
+			Statement stmt = con.createStatement();
+			
+			String strSql = "SELECT MEMID, MEMNAME FROM MEMBERS";
+			ResultSet rs3 = stmt.executeQuery(strSql);
+			ArrayList<MemberDAO> arrMember = new ArrayList<MemberDAO>();
+			
+			
+			while(rs3.next()) {
+				MemberDAO member = new MemberDAO();
+				member.setMemID(rs3.getString("MEMID"));
+				member.setMemName(rs3.getString("MEMNAME"));
+				
+				arrMember.add(member);
+			}
+			
+			
+			con.close();
+			con = null;
+			
+			//System.out.println(rs.getString("TITLE"));
+			
+			request.setAttribute("list", arr);
+			request.setAttribute("list2", arr2);
+			request.setAttribute("members", arrMember);
+			
+			request.getRequestDispatcher("/01_client/" + strURL).forward(request, response);
+		
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}			
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request, response);
+	}
+}
+
+------------------------
+--contentCon
+
+package PKG_Board;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_DAO.listDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/BoardContent")
+public class contentController extends HttpServlet
+{
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String idx = request.getParameter("idx");
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "board", "1");
+		
+			String strProcName2 = "{call PKG_BOARD.PROC_BOARD_SEL(?,?,?)}";
+			CallableStatement csmt2 = con.prepareCall(strProcName2);
+			csmt2.setString(1, "LIST");
+			csmt2.setString(2, idx);
+			csmt2.registerOutParameter(3, OracleTypes.CURSOR);
+			
+			csmt2.execute();
+			
+			ResultSet rs = (ResultSet)csmt2.getObject(3);
+			
+			rs.next();
+				
+			listDAO list = new listDAO();
+			list.setIdx(rs.getString("IDX"));
+			list.setTitle(rs.getString("TITLE"));
+			list.setContents(rs.getString("CONTENTS"));
+			list.setBnum(rs.getString("BNUM"));
+				
+
+			con.close();
+			con = null;
+			
+			request.setAttribute("content", list);
+		
+			
+			request.getRequestDispatcher("/01_client/content.jsp").forward(request, response);
+		
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest requset, HttpServletResponse response) throws ServletException, IOException {
+		
+	}
+	
+}
+-----------------------------------------
+
+--
+
+--updateC
+
+package PKG_Board;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/BoardUpdate")
+public class updateController extends HttpServlet 
+{
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doPost(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String[] strAdmins = request.getParameterValues("admin");
+		String[] strIdxes = request.getParameterValues("idx");
+		
+		
+		Connection con;
+		Statement stmt;
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "board", "1");
+			
+			for(int i=0;i<strAdmins.length;i++) {
+				System.out.println(strAdmins[i] + " - " + strIdxes[i]);
+				String strSql = "UPDATE BOARDS SET ADMIN = '" + strAdmins[i] + "' WHERE IDX=" + strIdxes[i];
+				stmt = con.createStatement();
+				stmt.execute(strSql);
+			}
+			
+			response.sendRedirect("/ServBoard/BoardList?strURL=list2.jsp");
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		  catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+}
