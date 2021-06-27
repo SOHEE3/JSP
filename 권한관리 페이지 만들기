@@ -1,0 +1,1287 @@
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b6e057d4-6bb9-48ab-86f8-8fef73bf6e16/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b6e057d4-6bb9-48ab-86f8-8fef73bf6e16/Untitled.png)
+
+—02_admin————————————————————————————
+
+<login.jsp : 관리자 홈페이지로 로그인한다>
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<a href="/ServletBoard/Admin_AuthList">로그인관리자</a>
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4420e180-6188-40c3-88a4-d68a39292bfb/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4420e180-6188-40c3-88a4-d68a39292bfb/Untitled.png)
+
+<auth_list.jsp : 사용자가 보는 관리자 페이지 화면> 
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    <%@page import="java.util.ArrayList" %>
+    <%@page import="PKG_ADMIN_DAO.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<style>
+	
+		body{
+		
+			margin:0px;
+		}
+		
+		.txt{
+			width:98%;
+			height:40px;
+			border-width:0px;
+			text-align:center;
+			font-size:14px;
+		}
+		
+		.selectedMenu{
+		
+			background-color:#444444;
+			color:#fefefe;
+			font-weight:bolder;
+		
+		}
+	</style>
+	<script src="/ServletBoard/js/jquery-3.6.0.min.js"></script>
+	<script>
+		
+		var authSearch = function(){
+			
+			var authname = $("#s_authname").val();
+			//alert(authname);
+			location.href="/ServletBoard/Admin_AuthList?authname=" + authname;
+			
+		}
+		
+		var checkAll = function(){
+			
+			//----체크박스 전체 풀고 열기
+								//속성값이 체크면
+			var rst = $("#chkAll").prop("checked");
+			
+			if(rst) {					// 체크된걸 true로 
+				$("input[name='chk']").prop("checked",true);
+			}
+			else{
+				
+				$("input[name='chk']").prop("checked",false);
+			}
+			
+		}
+		
+		var isAddRow = true; // 전역변수 
+		//추가 
+		var addRow = function(){
+			
+			//ajax로 새로운 AUTHID를 받아온다./ 좋은방법은 아니다 . 
+			setNewAuthID();
+			
+			
+		}
+		
+		var addRow_Res = function(newID){
+			
+		
+			var strHTML = "";
+			
+			strHTML += "<tr>";
+			strHTML += "<td width='10%' height='30' align='center'>";
+			strHTML += 	"<input type='checkbox' name='chk' value='" + newID + "'/>";
+			strHTML += "</td>";
+			strHTML += "<td width='25%' height='30' align='center'>";
+			strHTML += 	"<input type='text' name='authid' class='txt' value='"+ newID +"' readonly/>";
+			strHTML += "</td>";
+			strHTML += "<td width='40%' height='30' align='center'>";
+			strHTML += "<input type='text' name='authname' class='txt'/>";
+			strHTML += "</td>";
+			strHTML += "<td width='1px'>";
+			strHTML += "<input type='hidden' name='gbn' value='I'/>";
+			strHTML += "</td>";
+			strHTML += "</tr>";
+			
+			if(isAddRow){ // isAddRow  ture일때만 추가를 해라 
+				$("#authListTbl tbody").append(strHTML);
+			}
+			
+			isAddRow = false; // 추가가되면 false로 바꿔라 // 없애면 추가누를때마다 찍힌다 
+			
+		}
+		
+		var modify = function(){
+			
+			var cnt = 0;
+			var len = $("input[name='authname']").length;
+			for(var i=0;i<len;i++){
+				var authname_val = $("input[name='authname']").eq(i).val();
+				//alert(authname_val);
+				
+				if(authname_val.trim()==""){ // 저장버튼을 눌렀을때 권한명쪽에 아무것도 안적힌경우들
+	
+				cnt += 1; // 아무것도 안적힌경우의 횟수를 센다 
+				
+				}
+				
+			}
+			
+			if(cnt>0){ // 아무것도 안적힌경우가 한번이라도 있을경우 / 경고창을 띄우고 돌아간다 
+				alert("권한을 정확하게 입력해주세요");
+				return; // 하나라도 있으면 안넘어가게 끊어주고 
+				
+			}
+
+			$("#authForm").submit();
+			
+			//document.getElementById("authForm").submit();
+			//<form name="authForm" action="/ServletBoard/Admin_ModAuthList" method="post"> 여기 실행 
+		}
+	
+		//var newID = ""; // 일단은 전역변수로 처리하고.. 시간없어서
+		var setNewAuthID = function (){
+						
+			var newAuthID = "";
+			
+			// 선생님이주신 코드 참조 
+			var ajaxObj = {
+				
+				type:"post",
+				async:"ture", 
+				url:"/ServletBoard/Admin_NewAuthID", 
+				data:"",   
+				dataType:"xml",
+				success: function(data){          
+					 //ajax요청을 통해 반환되는 데이터 data.
+					 //alert(data);
+					 //-- 새로생성될 아이디인가? 
+					newAuthID = $(data).find("authNewID").text(); // xml을 찾아온다..?- authNewIDController
+					//alert(newID);
+					
+				 },
+				 
+				error : function(xhr,status,error) {
+				      //오류 발생 시 처리
+					 alert("err");
+				},				 
+				complete:function(data,textStatus) {
+				      //작업 완료 후 처리
+				      //alert(newID);
+				     addRow_Res(newAuthID)
+				}
+		
+			}
+			
+			$.ajax(ajaxObj); //--------?
+		}
+		
+		
+		var delRow = function (){
+			
+			//하나라도 체크가 되지 않았따면 체크하시오 
+			
+			//삭제하시겠습니까?
+			var isRst = confirm("삭제 하시겠습니까?"); // 확인누르면 ture값 
+			
+					
+			if(isRst){ // 확인누르면 ture값 이 들어오고 취소하면 false값이 리턴 // 취소하면 false값이 리턴
+				$("#authForm").attr("action","/ServletBoard/Admin_DelAuthList");
+				$("#authForm").submit();
+			}
+		}
+	</script>
+	
+</head>
+
+	<%
+	
+	ArrayList<AuthListDAO> authLists = (ArrayList<AuthListDAO>)request.getAttribute("authLists");
+		
+	
+	%>
+
+<body>
+	<form name="authForm" id="authForm" action="/ServletBoard/Admin_ModAuthList" method="post">
+
+	<table border="1" width="100%" align="center" cellpadding="0" cellspacing="0" >
+		<tr>
+			<td width="100%" height="70px" align="center">
+				<!-- 메뉴 구성 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0" >
+					<tr>
+						<td width="16%" height="40px" align="center" class="selectedMenu">
+							<span>권한관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>회원관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>메뉴관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>프로그램관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>권한별상세관리</span>
+						</td>
+					</tr>
+				</table>
+				<!-- 메뉴 구성 테이블 끝 -->
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="890px" align="center" valign="top" id="authListTbl">
+				<!-- 권한리스트 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0" >
+					<tr>
+						<td width="35%" height="50" colspan="2">
+							<input type="text" name="s_authname" id="s_authname" />
+							<input type="button" value="조회" onclick="authSearch()"/>
+						</td>
+						<td width="45%" height="50" align="right" colspan="2">
+							<input type="button" value="추가" onclick="addRow()"/>
+							<input type="button" value="저장" onclick="modify()" />
+							<input type="button" value="삭제" onclick="delRow()"/>
+						</td>
+					</tr>
+					<tr>
+						<td width="10%" height="30" align="center">
+							<input type="checkbox" name="chkAll" id="chkAll" onclick="checkAll();"/>
+						</td>
+						<td width="25%" height="30" align="center">
+							권한아이디
+						</td>
+						<td width="45%" height="30" align="center">
+							권한명
+						</td>
+						<td width="1px" >
+							
+						</td>
+					</tr>	
+					
+					<%
+					
+					for(AuthListDAO auth : authLists){ 
+						// 알아서 돌면서 타입을 넘겨준다 /배열? 아무튼.. 여러 값이 들어가있음
+						
+					%>
+					
+					
+					<tr>
+						<td width="10%" height="40" align="center">
+							<input type="checkbox" name="chk" value="<%=auth.getAuthID() %>"/>
+						</td>
+						<td width="25%" height="40" align="center" >
+							<input type="text" name="authid" class="txt" value="<%=auth.getAuthID() %>" readonly/>
+						</td>
+						<td width="45%" height="40" align="center">
+							<input type="text" name="authname" class="txt" value="<%=auth.getAuthName() %>"/>
+							
+						</td>
+						<td width="1px" >
+							<input type="hidden" name="gbn" value="U"/> <!-- u,i 화면에는 숨겨져있다 U는 UPDATE I는 INSERT-->
+						</td>
+					</tr>
+					<%
+					
+						}
+					%>
+								
+				</table>
+				<!-- 권한리스트 테이블 끝 -->
+			</td>
+		</tr>
+	</table>
+</form>
+</body>
+</html>
+
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f529046d-0937-421a-9c28-5236418e3140/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f529046d-0937-421a-9c28-5236418e3140/Untitled.png)
+
+Admin_AuthList > @WebServlet(Admin_AuthList  ) 여기로 controller에서 설정해준것: 정보를 보여주지 않기위해 // 조회: 권한명에 있는 글자입력시 조회가능 // 체크박스 클릭시 전체 풀고 해제 가능// 추가: 추가버튼 클릭시 권한아이디에 자동으로 auth005 숫자 생성(DB 프로시져에 설정해둠)
+
+<member_list.jsp : 멤버 관리하는 화면 , 권한을 부여한다 >
+
+value가아닌 text를 쓰는 이유
+
+<div id ="aa" value="aa"> 
+hello 
+</div>
+
+1. 여기서 가져와야하는 값은 hello인데 value를 쓰면 aa를 가져오기 때문이다 
+
+--> 자바스크립트에서는 innerHTML 쓰면 hello가 나온다 / value는 value 그대로 쓰면됨
+
+```jsx
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    <%@ page import="java.util.ArrayList"%>
+    <%@page import="PKG_ADMIN_DAO.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<style>
+	
+		body{
+		
+			margin:0px;
+		}
+		
+		.txt{
+			width:98%;
+			height:40px;
+			border-width:0px;
+			text-align:center;
+			font-size:14px;
+		}
+		
+		.selectedMenu{
+		
+			background-color:#444444;
+			color:#fefefe;
+			font-weight:bolder;
+		
+		}
+		
+		.auth{
+			font-size:20px;
+		}
+		
+	</style>
+	<script src="/ServletBoard/js/jquery-3.6.0.min.js"></script>
+	<script>
+	
+	var authSearch = function(){
+			
+			var memberName = $("#s_membername").val();
+			
+			location.href = "/ServletBoard/Admin_MemList?membername=" + memberName;
+			
+		}
+	
+		var addRow = function (data){ // authListController_ajax 에서 가져온 데이터들 / member_list에서 권한을 설정해줘야하니가 authlist에서 들고와야하기때문
+			
+			var strSelectHTML = "";
+			var authList_Length = $(data).find("authID").length;
+			
+			strSelectHTML += "<select name='auth' class='auth' title='auth1'>";
+			
+			for(var i=0;i<authList_Length;i++){
+				
+				var authID = $(data).find("authID").eq(i).text();
+				var authName = $(data).find("authName").eq(i).text();
+				
+				strSelectHTML += "<option value='" +authID +"'> " + authName +"</option>";
+				
+				
+			}
+			strSelectHTML += "</select>";
+			
+			var strHTML = "";
+			
+			strHTML += "<tr>";
+			strHTML += "<td width='10%' height='30' align='center'>";
+			strHTML += 	"<input type='checkbox' name='chk' value=''/>";
+			strHTML += "</td>";
+			strHTML += "<td width='15%' height='30' align='center'>";
+			strHTML += "		자동생성";
+			strHTML += "</td>";
+			strHTML += "<td width='35%' height='30' align='center'>";
+			strHTML += "<input type='text' name='authname' class='txt' title='auth1'/>";
+			strHTML += "</td>";
+			strHTML += "<td width='30%' height='30' align='center'>";
+					
+			strHTML +=  strSelectHTML
+			
+			strHTML += "</td>";
+			strHTML += "<td width='1px'>";
+			strHTML += "<input type='hidden' name='gbn' value='I'/>";
+			strHTML += "</td>";
+			strHTML += "</tr>";
+			
+			
+			$("#memberListTbl tbody").append(strHTML);
+		}
+		
+		
+		var setAuthLists = function (){
+			
+			//alert($(data).find("authList").length);
+			
+			// 선생님이주신 코드 참조 
+			var ajaxObj = {
+				
+				type:"post",
+				async:"true", 
+				url:"/ServletBoard/Admin_AuthList_AJAX", 
+				data:"",   
+				dataType:"xml",
+				success: function(data){          // ajax가 동작중
+					 //ajax요청을 통해 반환되는 데이터 data.
+					 //alert(data);
+					addRow(data);
+					
+				 },
+				 
+				error : function(xhr,status,error) {
+				      //오류 발생 시 처리
+					 alert("err");
+				},				 
+				complete:function(data,textStatus) {
+				      //작업 완료 후 처리 //ajax가 끝난후에 시작되는곳 
+					
+				}
+		
+			}
+			
+			$.ajax(ajaxObj); //--------?
+		}
+		
+		
+		//-78-----------------------------------------------
+		
+		var modify = function(){
+			//회원이름의 빈값 처리  
+			// each  :$("input[name='authname']" 여기가 5번 돈다면) each()안의 함수를 5번실행한다 각각으ㅣ 개체에 관해서 
+			$("[title='auth1']").each(
+					//"input[name='authname']"
+					function (){ // this : 각각 돌고있는 객체 하나하나 
+						var fieldName  = $(this).val();
+						if(fieldName.trim().length <= 0){
+							
+							alert("비어있는 필드를 적어주세요");
+							$(this).focus(); // 비어있는곳에 커서 
+							return false; // 하나라도 빈곳이 나타날시 함수를 끝내야 커서가 위에 자리잡는다. 경고창도 1번만뜨고 / 
+							
+						}
+					
+					}
+					
+			);
+		
+		$("#memberForm").submit();
+			
+			//권한에 대한 빈값도 처리 
+		/* 	
+			$("select[name='auth']").each(
+					
+					function (){ 
+						var authName = $(this).val();
+						if(authName.trim().length <= 0){
+							
+							alert("비어있는 권한을 설정해주세요");
+							$(this).focus(); 
+							return false;  
+							
+						}
+					
+					}
+					
+			);
+			 */
+			
+		}
+		
+	
+	</script>
+	
+	
+	
+</head>
+
+	<%
+	
+		ArrayList<MemberListDAO> memberLists = (ArrayList<MemberListDAO>)request.getAttribute("memberLists");
+		ArrayList<AuthListDAO> authLists = (ArrayList<AuthListDAO>)request.getAttribute("authLists");
+					
+	%>
+
+<body>
+
+	<form name="memberForm" id="memberForm" action="" action="/ServletBoard/Admin_ModMemberList" method="post">
+
+	<table border="1" width="100%" align="center" cellpadding="0" cellspacing="0" >
+		<tr>
+			<td width="100%" height="70px" align="center">
+				<!-- 메뉴 구성 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0" >
+					<tr>
+						<td width="16%" height="40px" align="center">
+							<span>권한관리</span>
+						</td>
+						<td width="16%" height="40px" align="center" class="selectedMenu">
+							<span>회원관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>메뉴관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>프로그램관리</span>
+						</td>
+						<td width="16%" height="40px" align="center">
+							<span>권한별상세관리</span>
+						</td>
+					</tr>
+				</table>
+				<!-- 메뉴 구성 테이블 끝 -->
+			</td>
+	</tr>	
+	<tr>
+			<td width="100%" height="890px" align="center" valign="top" id="memberListTbl">
+				<!-- 권한리스트 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0" >
+					<tr>
+						<td width="25%" height="50" colspan="2">
+							<input type="text" name="s_membername" id="s_membername" />
+							<input type="button" value="조회" onclick="authSearch()"/>
+						</td>
+						<td width="55%" height="50" align="right" colspan="3">
+							<input type="button" value="추가" onclick="setAuthLists()"/>
+							<input type="button" value="저장" onclick="modify()" />
+							<input type="button" value="삭제" onclick="delRow()"/>
+						</td>
+					</tr>
+					<tr>
+						<td width="10%" height="30" align="center">
+							<input type="checkbox" name="chkAll" id="chkAll" onclick="checkAll();"/>
+						</td>
+						<td width="15%" height="30" align="center">
+							회원아이디
+						</td>
+						<td width="35%" height="30" align="center">
+							회원명
+						</td>
+						<td width="20%" height="30" align="center">
+							권한
+						</td>
+						<td width="1px" >
+							<input type="hidden" name="gbn" value="U"/> <!-- U? -->
+						</td>
+					</tr>	
+					
+					<%
+					
+					for(MemberListDAO member : memberLists){ 
+						// 알아서 돌면서 타입을 넘겨준다 /  여러 값이 들어가있음
+						
+					%>
+					
+					
+					<tr>
+						<td width="10%" height="40" align="center">
+							<input type="checkbox" name="chk" value="<%=member.getMID() %>"/>
+						</td>
+						<td width="15%" height="40" align="center" >
+							<input type="text" name="authid" class="txt" value="<%=member.getMID() %>" readonly/>
+						</td>
+						<td width="35%" height="40" align="center">
+							<input type="text" title="auth1" name="authname" class="txt" value="<%=member.getMname() %>"/>
+							
+						</td>
+						<td width="20%" height="30" align="center">
+							
+							<select name="auth " class="auth" title="auth1">
+							
+								<%
+									for(AuthListDAO authList : authLists){ // server에서 구동되는 for 
+										
+										String selectedAuthID = member.getAuthID();
+										String authID = authList.getAuthID();
+										String authName = authList.getAuthName();
+										
+									
+								%>
+								 	<option value="<%=authID%>"  
+								 	
+								 <%
+								 	if(selectedAuthID.equals(authID)){
+								 %>
+								 	selected
+								 <% 
+								 	
+								 	}
+								 %>
+								 	><%=authName%></option>
+								<%
+									}
+								%>
+							
+							</select>
+						</td>
+						<td width="1px" >
+							<input type="hidden" name="gbn" value="U"/>
+						</td>
+					</tr>
+					<%
+					
+						}
+					%>
+								
+				</table>
+				<!-- 권한리스트 테이블 끝 -->
+			</td>
+		</tr>
+	
+	</table>
+	</form>
+</body>
+</html>
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9058b3f8-d596-487a-8e91-7579218dc274/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9058b3f8-d596-487a-8e91-7579218dc274/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/46d30a22-3215-409f-a997-b01d82ca78cb/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/46d30a22-3215-409f-a997-b01d82ca78cb/Untitled.png)
+
+---
+
+---
+
+—PKG_ADMIN——————————————————————————————————-
+
+<authList_Controller.java :  사용자가 정보를 볼수없게 권한설정하는 페이지의 코드를 한번 옮겨놓은 관리자 권한관리 controller페이지>
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_AuthList") 
+public class authList_Controller extends HttpServlet{
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doPost(req,resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String strAuthName = request.getParameter("authname");
+		//System.out.println(strAuthName);
+		//권한리스트에 관련 데이터를 가져오자
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "imsi", "1");
+			
+			
+			String strProcName = "{call PKG_AD_AUTH.PROC_AUTH_LIST(?,?)}";
+			
+			//list data
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			
+			csmt.setString(1, strAuthName); // ""
+			csmt.registerOutParameter(2, OracleTypes.CURSOR);
+			
+			
+			csmt.execute();
+			
+			ResultSet rs = (ResultSet)csmt.getObject(2);
+				
+			ArrayList<AuthListDAO> authLists = new ArrayList<AuthListDAO>();
+			while(rs.next()) {
+				AuthListDAO authList = new AuthListDAO();
+				authList.setAuthID(rs.getString("AUTHID"));
+				authList.setAuthName(rs.getString("AUTHNAME"));
+				
+				//--------
+				
+				authLists.add(authList);
+				
+			}
+			
+			request.setAttribute("authLists", authLists);
+			request.getRequestDispatcher("/02_admin/auth_list.jsp").forward(request, response); 
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4cc2c127-0366-4d61-a734-e3a697bd3aa7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4cc2c127-0366-4d61-a734-e3a697bd3aa7/Untitled.png)
+
+<authListController_ajax.java:   권한설정을 가져올 ajax 페이지 >
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import PKG_ADMIN_DAO.MemberListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_AuthList_AJAX")
+public class authListController_ajax extends HttpServlet{
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doPost(request,response);
+	}
+	
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		
+		
+		String strMemberName = request.getParameter("membername");
+		
+		//권한리스트에 관련 데이터를 가져오자
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "imsi", "1");
+			
+			
+			String strProcName = "{call PKG_AD_AUTH.PROC_AUTH_LIST(?,?)}";
+			
+			//list data
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			
+			csmt.setString(1, ""); // "" 프로시져에 IN_MEMNAME
+			csmt.registerOutParameter(2, OracleTypes.CURSOR);
+			
+			
+			csmt.execute();
+			
+			ResultSet rs = (ResultSet)csmt.getObject(2);
+
+			//xml로 만들자  // 권한설정
+			String strXML = "<?xml version='1.0'?>";
+			strXML +="<authLists>";
+			strXML += "<authList>";
+			strXML += "<authID>";
+		
+			strXML += "</authID>";
+			strXML += "<authName>";
+			strXML += "select AUTH";
+			strXML += "</authName>";
+			strXML += "</authList>";	
+	
+					
+			while(rs.next()) {
+				
+				strXML += "<authList>";
+				strXML += "<authID>";
+				strXML += rs.getString("AUTHID");
+				strXML += "</authID>";
+				strXML += "<authName>";
+				strXML += rs.getString("AUTHNAME");
+				strXML += "</authName>";
+				strXML += "</authList>";
+				
+	
+			}
+			
+			strXML += "</authLists>";
+	
+			response.setContentType("text/xml");
+		   	
+		    PrintWriter writer = response.getWriter();
+		    writer.print(strXML);
+			
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f6215caf-b6e1-469a-beb7-7f516e108a04/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f6215caf-b6e1-469a-beb7-7f516e108a04/Untitled.png)
+
+<authModController.java : 관리자 페이지에 새로운 데이터가 생성되었거나 기존데이터를 수정했을 때 저장하는 코드 > 
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_ModAuthList") 
+public class authModController extends HttpServlet{
+
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		doGet(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+			
+		request.setCharacterEncoding("UTF-8"); // UTF-8로 받아올때는 이게 꼭있어야한다 
+			
+			String[] strAuthIDs = request.getParameterValues("authid");
+			String[] strAuthNames = request.getParameterValues("authname");
+			String[] strGBN = request.getParameterValues("gbn");
+			
+			
+	
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");				
+				Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "imsi", "1");
+				
+				String strProcName = "{call PKG_AD_AUTH.PROC_AUTH_MOD(?,?,?)}";
+				
+				//list data
+				
+				CallableStatement csmt = con.prepareCall(strProcName);
+				
+				for(int i=0; i<strGBN.length;i++) {
+					
+					csmt.setString(1, strAuthIDs[i]);
+					csmt.setString(2, strAuthNames[i]);
+					csmt.setString(3, strGBN[i]);					
+					
+					csmt.execute();
+					
+				}
+								
+				con.close();
+				con=null;
+				
+				response.sendRedirect("/ServletBoard/Admin_AuthList");
+				
+				
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+									
+		
+	}
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fc6e12b0-4329-4623-b17b-60a19f35b9d7/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fc6e12b0-4329-4623-b17b-60a19f35b9d7/Untitled.png)
+
+<authNewIDController.java : 새로운 데이터가 들어왔을 때 아이디가 생성되는 부분의 코드  > 
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_NewAuthID")
+public class authNewIDController extends HttpServlet{
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		doPost(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "imsi", "1");
+			
+			
+			String strProcName = "{call PKG_AD_AUTH.PROC_AUTH_NEWID(?)}";
+			
+			//list data
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			csmt.registerOutParameter(1, OracleTypes.CURSOR);
+					
+			csmt.execute();
+						
+			ResultSet rs = (ResultSet)csmt.getObject(1);
+			
+			rs.next();
+			
+			String strXML = "<?xml version='1.0'?>";
+			strXML += "<authNewID>" + rs.getString("AUTHID") + "</authNewID>";
+			
+			//http를 활용해서 출력 
+			response.setContentType("text/xml");
+		  	
+		  	PrintWriter writer = response.getWriter();
+		  	writer.print(strXML);
+					
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/53f27774-0f17-4874-8192-ed8248edd441/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/53f27774-0f17-4874-8192-ed8248edd441/Untitled.png)
+
+<authDelController.java : 데이터 삭제하는 부분인데 미완성 > 
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/Admin_DelAuthList")
+public class authDelController extends HttpServlet{
+
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		doPost(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+		String[] strCHKs = request.getParameterValues("chk");
+		String[] strAuthIDs = request.getParameterValues("authid");
+		
+
+		for(String strCHK : strCHKs) {
+			//System.out.println(strCHK);
+		}
+		
+	}
+	
+}
+```
+
+---
+
+<memberListController.java : 멤버에게 권한을 설정하는 부분의 list를 볼수있는 페이지의 코드>
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import PKG_ADMIN_DAO.MemberListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_MemList")
+public class memberListController extends HttpServlet{
+
+	
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		
+		
+		String strMemberName = request.getParameter("membername");
+		
+		//권한리스트에 관련 데이터를 가져오자
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "imsi", "1");
+			
+			
+			String strProcName = "{call PKG_AD_MEMBER.PROC_MEMBER_LIST(?,?,?)}";
+			
+			//list data
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			
+			csmt.setString(1, strMemberName); // "" 프로시져에 IN_MEMNAME
+			csmt.registerOutParameter(2, OracleTypes.CURSOR); //@
+			csmt.registerOutParameter(3, OracleTypes.CURSOR); //#
+			
+			csmt.execute();
+			
+			ResultSet rs = (ResultSet)csmt.getObject(2); // MEMBERLIST @getObject(2); 을 가져오겠다
+			ResultSet rs2 = (ResultSet)csmt.getObject(3); // AUTHLIST # 
+				
+			ArrayList<MemberListDAO> memberLists = new ArrayList<MemberListDAO>();
+			ArrayList<AuthListDAO> authLists = new ArrayList<AuthListDAO>();
+			
+			while(rs.next()) {
+				MemberListDAO memberList = new MemberListDAO();
+				
+				memberList.setMID(rs.getString("MID"));
+				memberList.setMname(rs.getString("MNAME"));
+				memberList.setAuthID(rs.getString("AUTHID"));
+				memberList.setAuthName(rs.getString("AUTHNAME"));
+			
+				memberLists.add(memberList);
+			}
+			
+			while(rs2.next()) {
+				
+				AuthListDAO authList = new AuthListDAO();
+				authList.setAuthID(rs2.getString("AUTHID"));
+				authList.setAuthName(rs2.getString("AUTHNAME"));
+				
+				authLists.add(authList);
+				
+			}
+			
+			request.setAttribute("memberLists", memberLists);
+			request.setAttribute("authLists", authLists);
+			request.getRequestDispatcher("/02_admin/member_list.jsp").forward(request, response); 
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request,response);
+	}
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d763b075-91e1-4ed5-8583-33299868515d/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d763b075-91e1-4ed5-8583-33299868515d/Untitled.png)
+
+<memberModController.java: 새로운데이터가 들어올 때 저장과 수정 미완성>
+
+```jsx
+package PKG_ADMIN;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/Admin_ModMemberList")
+public class memberModController extends HttpServlet{
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doPost(req,resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String[] strMemberIDs = request.getParameterValues("authid");
+		String[] strMemberNames = request.getParameterValues("authname");
+		String[] strMemberAuthes = request.getParameterValues("auth");
+		String[] strGBN = request.getParameterValues("gbn");
+		
+		
+	}
+	
+	
+	
+}
+```
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5b4efb39-b1ee-4350-90e8-ef39315817f4/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5b4efb39-b1ee-4350-90e8-ef39315817f4/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a583bbbc-5bb1-4ea0-b52a-106b546ddf93/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a583bbbc-5bb1-4ea0-b52a-106b546ddf93/Untitled.png)
+
+![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9dd66e0d-1ca7-4ec8-b5c8-c1ee3e27148c/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9dd66e0d-1ca7-4ec8-b5c8-c1ee3e27148c/Untitled.png)
+
+---
+
+—PKG_ADMIN_DAO———————————————————————————————————
+
+DAO(Data Access Object) 는 DB를 사용해 데이터를 조회하거나 조작하는 기능을 전담하도록 만드는 오브젝트
+
+<AuthListDAO : private 타입의 객체를 생성하고 필요할 때 마다 쓰려고 - DB에 접근할때 쓰려고 +  보안 > 
+
+```jsx
+package PKG_ADMIN_DAO;
+
+public class AuthListDAO {
+
+		private String AuthID;
+		private String AuthName;
+		
+		
+		public String getAuthID() {
+			return AuthID;
+		}
+		public void setAuthID(String authID) {
+			AuthID = authID;
+		}
+		public String getAuthName() {
+			return AuthName;
+		}
+		public void setAuthName(String authName) {
+			AuthName = authName;
+		}
+		
+	
+}
+```
+
+<MemberListDAO.java>
+
+```jsx
+package PKG_ADMIN_DAO;
+
+public class MemberListDAO {
+
+		private String MID;
+		private String Mname;
+		private String AuthID;
+		private String AuthName;
+		
+		public String getMID() {
+			return MID;
+		}
+		public void setMID(String mID) {
+			MID = mID;
+		}
+		public String getMname() {
+			return Mname;
+		}
+		public void setMname(String mname) {
+			Mname = mname;
+		}
+		public String getAuthID() {
+			return AuthID;
+		}
+		public void setAuthID(String authID) {
+			AuthID = authID;
+		}
+		public String getAuthName() {
+			return AuthName;
+		}
+		public void setAuthName(String authName) {
+			AuthName = authName;
+		}
+		
+	
+	
+}
+```
