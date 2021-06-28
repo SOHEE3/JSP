@@ -1,0 +1,1203 @@
+------------menuList.jsp
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+    
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="PKG_ADMIN_DAO.*"%>     
+    
+    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+<style>
+
+	body{
+		margin:0px;
+	}
+	
+	.txt{
+		width:98%;
+		height:40px;
+		border-width:0px;
+		text-align:center;
+		font-size:16px;
+	}
+	
+	.selectedMenu{
+		background-color:#444444;
+		color:#fefefe;
+		font-weight:bolder;
+	}
+</style>
+
+	<script src="/ServBoard/js/jquery-3.6.0.js"></script>
+	<script>
+	
+	
+		var showSubMenuList = function(selectedMainMenuID){
+			
+			location.href = "/ServBoard/Admin_MenuList?selectedMainMenuID=" + selectedMainMenuID;
+			
+		}
+	
+	</script>
+
+</head>
+
+<%
+
+	ArrayList<MenuListDAO> mainMenuList = (ArrayList<MenuListDAO>)request.getAttribute("maimMenuList");
+	ArrayList<MenuListDAO> subMenuList = (ArrayList<MenuListDAO>)request.getAttribute("subMenuList");
+
+%>
+
+
+<body>
+
+	<table border="1" width="100%" align="center" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="100%" height="70px" align="center">
+				<!-- 메뉴구성 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="16%" height="40" align="center" class="selectedMenu">
+							<a href="/ServBoard/Admin_AuthList"><span>권한관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center">
+							<a href="/ServBoard/Admin_MemList"><span>회원관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>메뉴관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>프로그램관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>권한별상세관리</span>
+						</td>
+					</tr>
+				</table>
+				<!-- 메뉴구성 테이블 끝 -->
+			</td>
+		</tr>
+	</table>
+	
+	<table border="1" width="100%" height="880px" align="center" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="40%" align="center" height="880px" valign="top">
+				<table border="1" width="100%"  align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="10%" height="40px" align="center">
+							<input type="checkbox" name="" value="" />
+						</td>
+						<td width="29%" height="40px" align="center">
+							메뉴아이디
+						</td>
+						<td width="40%" height="40px" align="center">
+							메뉴명
+						</td>
+						<td width="10%" height="40px" align="center">
+							순서
+						</td>
+						<td width="10%" height="40px" align="center">
+							레벨
+						</td>
+						<td width="1%" height="40px" align="center">
+						
+						</td>
+					</tr>
+					
+					<%
+						for(MenuListDAO mainMenu : mainMenuList)
+						{
+					%>
+					<tr onclick="showSubMenuList('<%=mainMenu.getMenuID() %>')">
+						<td width="10%" height="40px" align="center">
+							<input type="checkbox" name="" value="" />
+						</td>
+						<td width="29%" height="40px" align="center">
+							<%=mainMenu.getMenuID() %>
+						</td>
+						<td width="40%" height="40px" >
+							<%=mainMenu.getMenuName() %>
+						</td>
+						<td width="10%" height="40px" align="center">
+							<%=mainMenu.getMenuSeq() %>
+						</td>
+						<td width="10%" height="40px" align="center">
+							<%=mainMenu.getMenuSeq() %>
+						</td>
+						<td width="1%" height="40px" align="center">
+						
+						</td>
+					</tr>
+					
+					<%
+						}
+					%>
+					
+				</table>
+			</td>
+			<td width="60%" align="center" valign="top">
+				<!-- 서브메뉴 테이블 시작 -->
+				<table border="1" width="100%"  align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="7%" height="40px" align="center">
+							<input type="checkbox" name="" value="" />
+						</td>
+						<td width="22%" height="40px" align="center">
+							메뉴아이디
+						</td>
+						<td width="34%" height="40px" align="center">
+							메뉴명
+						</td>
+						<td width="7%" height="40px" align="center">
+							순서
+						</td>
+						<td width="7%" height="40px" align="center">
+							레벨
+						</td>
+						<td width="22%" height="40px" align="center">
+							부모아이디
+						</td>
+						<td width="1%" height="40px" align="center">
+						
+						</td>
+					</tr>
+					
+					
+					<%
+						for(MenuListDAO subMenu : subMenuList)
+						{
+					%>
+					
+					<tr >
+						<td width="7%" height="40px" align="center">
+							<input type="checkbox" name="" value="" />
+						</td>
+						<td width="22%" height="40px" align="center">
+							<%=subMenu.getMenuID() %>
+						</td>
+						<td width="34%" height="40px">
+							<%=subMenu.getMenuName() %>
+						</td>
+						<td width="7%" height="40px" align="center">
+							<%=subMenu.getMenuSeq() %>
+						</td>
+						<td width="7%" height="40px" align="center">
+							<%=subMenu.getMenuLvl() %>
+						</td>
+						<td width="22%" height="40px" align="center">
+							<%=subMenu.getParentID() %>
+						</td>
+						<td width="1%" height="40px" align="center">
+						
+						</td>
+					</tr>
+					
+					<%
+					
+						}
+					
+					%>
+				</table>
+				<!-- 서브메뉴 테이블 끝 -->
+			
+			</td>
+		</tr>
+	</table>
+
+</body>
+</html>
+--------------------------------------------
+---memberList.jsp
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+    
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="PKG_ADMIN_DAO.*"%>    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+<style>
+
+	body{
+		margin:0px;
+	}
+	
+	.txt{
+		width:98%;
+		height:40px;
+		border-width:0px;
+		text-align:center;
+		font-size:16px;
+	}
+	
+	.selectedMenu{
+		background-color:#444444;
+		color:#fefefe;
+		font-weight:bolder;
+	}
+	
+	.auth{
+	
+		font-size:20px;
+	
+	}
+</style>
+
+<script src="/ServBoard/js/jquery-3.6.0.js"></script>
+
+<script>
+
+	var authSearch = function(){
+		
+		var memberName = $("#s_membername").val();
+		
+		location.href = "/ServBoard/Admin_MemList?membername=" + memberName;
+		
+	}
+
+
+	var addRow = function(data){
+		
+		var strSelectHTML = "";
+		
+		var authList_Length = $(data).find("authID").length
+		
+		strSelectHTML += "<select name='auth' class='auth' title='auth1'>";
+		for(var i=0;i<authList_Length;i++){
+			
+			var authID = $(data).find("authID").eq(i).text();
+			
+			var authName = $(data).find("authName").eq(i).text();;
+			strSelectHTML += "<option value='" + authID + "'>" + authName + "</option>";
+		}
+		
+		strSelectHTML += "</select>";
+		
+		var strHTML = "";
+		strHTML += "<tr>";
+		strHTML += "	<td width='10%' height='40' align='center'>";
+		strHTML += "		<input type='checkbox' name='chk' value=''/>";
+		strHTML += "	</td>";
+		strHTML += "	<td width='15%' height='40' align='center'>";
+		strHTML += "		자동생성";
+		strHTML += "	</td>";
+		strHTML += "	<td width='35%' height='40' align='center'>";
+		strHTML += "		<input type='text' name='authname' class='txt' title='auth1'/>";
+		strHTML += "	</td>";
+		strHTML += "	<td width='30%' height='40' align='center'>";
+				
+		strHTML += strSelectHTML	
+		
+		strHTML += "	</td>";
+		strHTML += "	<td width='1px'>";
+		strHTML += "		<input type='hidden' name='gbn' value='I' />";
+		strHTML += "	</td>";
+		strHTML += "</tr>";
+		
+		
+		$("#memberListTbl tbody").append(strHTML);
+	}
+	
+	
+	var setAuthLists = function(){
+
+		
+		
+		var ajaxObj = {
+				
+				type:"post", 
+				async:"true", 
+				url:"/ServBoard/Admin_AuthList_AJAX", 
+				data:"", 
+				dataType:"xml",  
+				success: function(data){
+					addRow(data);
+					
+					
+				},
+		  		error : function(xhr,status,error) {
+		      		alert("err")
+		  		},
+		  		complete:function(data,textStatus) {
+		  			
+		  		}
+
+			  }
+		
+		$.ajax(ajaxObj);
+		
+		
+	}
+	
+	
+	var modify = function(){
+		
+		var isSubmit = true;
+		
+		//회원이름의 빈값 처리, 권한에 대한 빈값도 처리
+		$("[title='auth1']").each(
+				
+				function(){
+					var fieldName = $(this).val();
+					
+					if(fieldName.trim().length <= 0){
+						alert("비어있는 필드를 적어주세요");
+						$(this).focus();
+						isSubmit = false;
+						return false;
+					}
+				}
+				
+		);
+		
+		if(isSubmit){
+		
+			$("#memberForm").submit();
+		}
+		
+		//권한에 대한 빈값도 처리
+		/*
+		$("select[name='auth']").each(
+				
+				function(){
+					var authName = $(this).val();
+					if(authName.trim().length <= 0){
+						alert("비어있는 권한을 선택해 주세요");
+						$(this).focus();
+						return false;
+					}
+				}
+				
+		);
+		*/
+	}
+
+	
+	var delRow = function(){
+		
+		$("#memberForm").attr("action", "/ServBoard/Admin_DelMemberList");
+		
+		
+		$("#memberForm").submit();
+	}
+</script>
+
+</head>
+
+<%
+	ArrayList<MemberListDAO> memberLists = (ArrayList<MemberListDAO>)request.getAttribute("memberLists");
+	ArrayList<AuthListDAO> authLists = (ArrayList<AuthListDAO>)request.getAttribute("authLists");
+%>
+
+
+
+<body>
+
+	<form name="memberForm" id="memberForm" action="/ServBoard/Admin_ModMemberList" method="post">
+	<table border="1" width="100%" align="center" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="100%" height="70px" align="center">
+				<!-- 메뉴구성 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="16%" height="40" align="center">
+							<a href="/ServBoard/Admin_AuthList"><span>권한관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center" class="selectedMenu">
+							<span>회원관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<a href="/ServBoard/Admin_MenuList"><span>메뉴관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>프로그램관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>권한별상세관리</span>
+						</td>
+					</tr>
+				</table>
+				<!-- 메뉴구성 테이블 끝 -->
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="890px" align="center" valign="top" id="memberListTbl">
+				<!-- 권한리스트 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="25%" height="50" colspan="2">
+							<input type="text" name="s_membername" id="s_membername" />
+							<input type="button" value="조회" onclick="authSearch()"/>
+						</td>
+						<td width="55%" height="50" align="right" colspan="3">
+							<input type="button" value="추가" onclick="setAuthLists()"/>
+							<input type="button" value="저장" onclick="modify()"/>
+							<input type="button" value="삭제" onclick="delRow()"/>
+						</td>
+					</tr>
+					<tr>
+						<td width="10%" height="30" align="center">
+							<input type="checkbox" name="chkAll" id="chkAll" onclick="checkAll()"/>
+						</td>
+						<td width="15%" height="30" align="center">
+							회원아이디
+						</td>
+						<td width="35%" height="30" align="center">
+							회원명
+						</td>
+						<td width="20%" height="30" align="center">
+							권한
+						</td>
+						<td width="1px">
+					
+							
+						
+						</td>
+					</tr>
+					
+					<%
+						for(MemberListDAO member : memberLists){
+					%>
+					<tr>
+						<td width="10%" height="40" align="center">
+							<input type="checkbox" name="chk" value="<%=member.getMID() %>"/>
+						</td>
+						<td width="15%" height="40" align="center">
+							<input type="text" name="authid" class="txt" value="<%=member.getMID() %>" readonly/>
+						</td>
+						<td width="35%" height="40" align="center">
+							<input type="text" title="auth1" name="authname" class="txt" value="<%=member.getMName() %>"/>
+						</td>
+						<td width="20%" height="30" align="center">
+							<select name="auth" class='auth' title="auth1">
+							
+								<%
+									for(AuthListDAO authList : authLists){
+										
+									String selectedAuthID = member.getAuthID();
+									String authID = authList.getAuthID();
+									String authName = authList.getAuthName();
+								%>
+									<option value="<%=authID%>" 
+								<%	
+										if(selectedAuthID.equals(authID)){
+								%>
+										selected
+								<%			
+										}
+								%>	
+									><%=authName %></option>
+								<%		
+									}
+								%>
+							
+							
+							</select>
+						</td>
+						<td width="1px">
+							<input type="hidden" name="gbn" value="U" />
+						</td>
+					</tr>
+					<% } %>
+					
+					
+					
+				</table>
+				<!-- 권한리스트 테이블 끝 -->
+			</td>
+		</tr>		
+	</table>
+	</form>
+
+</body>
+</html>
+-------------------------------
+---auth_list.jsp
+
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="PKG_ADMIN_DAO.*"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+<style>
+
+	body{
+		margin:0px;
+	}
+	
+	.txt{
+		width:98%;
+		height:40px;
+		border-width:0px;
+		text-align:center;
+		font-size:16px;
+	}
+	
+	.selectedMenu{
+		background-color:#444444;
+		color:#fefefe;
+		font-weight:bolder;
+	}
+</style>
+
+<script src="/ServBoard/js/jquery-3.6.0.js"></script>
+<script>
+
+	var authSearch = function(){
+		
+		var authname = $("#s_authname").val();
+		
+		location.href = "/ServBoard/Admin_AuthList?authname=" + authname;
+		
+	}
+	
+	var checkAll = function(){
+		
+		var rst = $("#chkAll").prop("checked");
+		
+		if(rst){
+			$("input[name='chk']").prop("checked", true);
+		}
+		else{
+			$("input[name='chk']").prop("checked", false);
+		}
+	}
+	
+	var isAddRow = true;
+	var addRow = function(){
+		
+		//ajax로 새로운 AUTHID를 받아온다.
+		setNewAuthID();
+
+		
+	}
+	
+	var addRow_Res = function(newID){
+		
+		
+		var strHTML = "";
+		strHTML += "<tr>";
+		strHTML += "	<td width='10%' height='40' align='center'>";
+		strHTML += "		<input type='checkbox' name='chk' value='" + newID+ "'/>";
+		strHTML += "	</td>";
+		strHTML += "	<td width='25%' height='40' align='center'>";
+		strHTML += "		<input type='text' name='authid' class='txt' value='" + newID + "' readonly/>";
+		strHTML += "	</td>";
+		strHTML += "	<td width='45%' height='40' align='center'>";
+		strHTML += "		<input type='text' name='authname' class='txt'/>";
+		strHTML += "	</td>";
+		strHTML += "	<td width='1px'>";
+		strHTML += "		<input type='hidden' name='gbn' value='I' />";
+		strHTML += "	</td>";
+		strHTML += "</tr>";
+	
+		if(isAddRow){
+			$("#authListTbl tbody").append(strHTML);
+		}
+		
+		isAddRow = false;
+	}
+	
+	var modify = function(){
+		
+		var cnt = 0;
+		var len = $("input[name='authname']").length;
+		for(var i=0;i<len;i++){
+			var authname_val = $("input[name='authname']").eq(i).val();
+			//alert(authname_val);
+			
+			if(authname_val.trim() == ""){
+				cnt += 1;
+			}
+		}
+		
+		if(cnt > 0){
+			
+			alert("권한이름을 정확하게 입력해 주세요 !!!");
+			return;
+		}
+		
+		
+		$("#authForm").submit();
+	}
+
+	
+	var setNewAuthID = function(){
+
+		var newAuthID = "";
+		
+		var ajaxObj = {
+				
+				type:"post", 
+				async:"true", 
+				url:"/ServBoard/Admin_NewAuthID", 
+				data:"", 
+				dataType:"xml",  
+				success: function(data){
+					//alert(data);
+					newAuthID = $(data).find("authNewID").text();
+					
+				},
+		  		error : function(xhr,status,error) {
+		      		alert("err")
+		  		},
+		  		complete:function(data,textStatus) {
+		  			addRow_Res(newAuthID);
+		  		}
+
+			  }
+		
+		$.ajax(ajaxObj);
+		
+		
+	}
+	
+	
+	var delRow = function(){
+		
+		//하나라도 체크가 되지 않았다면 체크해라 이놈아
+		
+		//삭제 하시겠습니까?
+		var isRst = confirm("삭제 하시겠습니까?");
+		
+		if(isRst){
+			$("#authForm").attr("action","/ServBoard/Admin_DelAuthList");
+			$("#authForm").submit();
+		}
+	}
+</script>
+
+</head>
+
+<%
+
+	ArrayList<AuthListDAO> authLists = (ArrayList<AuthListDAO>)request.getAttribute("authLists");
+
+%>
+
+
+<body>
+	<form name="authForm" id="authForm" action="/ServBoard/Admin_ModAuthList" method="post">
+	<table border="1" width="100%" align="center" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="100%" height="70px" align="center">
+				<!-- 메뉴구성 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="16%" height="40" align="center" class="selectedMenu">
+							<span>권한관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<a href="/ServBoard/Admin_MemList"><span>회원관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center">
+							<a href="/ServBoard/Admin_MenuList"><span>메뉴관리</span></a>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>프로그램관리</span>
+						</td>
+						<td width="16%" height="40" align="center">
+							<span>권한별상세관리</span>
+						</td>
+					</tr>
+				</table>
+				<!-- 메뉴구성 테이블 끝 -->
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="890px" align="center" valign="top" id="authListTbl">
+				<!-- 권한리스트 테이블 시작 -->
+				<table border="1" width="80%" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="35%" height="50" colspan="2">
+							<input type="text" name="s_authname" id="s_authname" />
+							<input type="button" value="조회" onclick="authSearch()"/>
+						</td>
+						<td width="45%" height="50" align="right" colspan="2">
+							<input type="button" value="추가" onclick="addRow()"/>
+							<input type="button" value="저장" onclick="modify()"/>
+							<input type="button" value="삭제" onclick="delRow()"/>
+						</td>
+					</tr>
+					<tr>
+						<td width="10%" height="30" align="center">
+							<input type="checkbox" name="chkAll" id="chkAll" onclick="checkAll()"/>
+						</td>
+						<td width="25%" height="30" align="center">
+							권한아이디
+						</td>
+						<td width="45%" height="30" align="center">
+							권한명
+						</td>
+						<td width="1px">
+						
+						</td>
+					</tr>
+					
+					<%
+						for(AuthListDAO auth : authLists){
+					%>
+					<tr>
+						<td width="10%" height="40" align="center">
+							<input type="checkbox" name="chk" value="<%=auth.getAuthID() %>"/>
+						</td>
+						<td width="25%" height="40" align="center">
+							<input type="text" name="authid" class="txt" value="<%=auth.getAuthID() %>" readonly/>
+						</td>
+						<td width="45%" height="40" align="center">
+							<input type="text" name="authname" class="txt" value="<%=auth.getAuthName() %>"/>
+						</td>
+						<td width="1px">
+							<input type="hidden" name="gbn" value="U" />
+						</td>
+					</tr>
+					<% } %>
+					
+					
+					
+				</table>
+				<!-- 권한리스트 테이블 끝 -->
+			</td>
+		</tr>
+	</table>
+	</form>
+</body>
+</html>
+--------------------------------------
+---menuListController
+
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import PKG_ADMIN_DAO.MemberListDAO;
+import PKG_ADMIN_DAO.MenuListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_MenuList")
+public class menuListController extends HttpServlet 
+{
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String strSelectedMainMenuID = request.getParameter("selectedMainMenuID");
+		String strMainMenuName = request.getParameter("mainMenuName");
+		String strSubMenuName = request.getParameter("subMenuName");
+		
+		Connection con = null;
+		
+		//권한리스트에 관련 데이터를 가져오자
+		try {
+			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "mngauth", "1");
+			
+			String strProcName = "{call PKG_AD_MENUS.PROC_MAINMENUS_SEL(?,?,?,?)}";
+			CallableStatement csmt = con.prepareCall(strProcName);
+			csmt.setString(1, strSelectedMainMenuID);
+			csmt.setString(2, strMainMenuName);
+			csmt.registerOutParameter(3, OracleTypes.CURSOR);
+			csmt.registerOutParameter(4, OracleTypes.CURSOR);
+			
+			csmt.execute();
+			
+			
+			ResultSet rs = (ResultSet)csmt.getObject(3);  //MAINMENULIST
+			ResultSet rs2 = (ResultSet)csmt.getObject(4); //SUBMENULIST
+			
+			
+			ArrayList<MenuListDAO> maimMenuList = new ArrayList<MenuListDAO>();
+			ArrayList<MenuListDAO> subMenuList = new ArrayList<MenuListDAO>();
+			
+			while(rs.next()) {
+				
+				
+				MenuListDAO mainMenu = new MenuListDAO();
+				
+				mainMenu.setMenuID(rs.getString("MENUID"));
+				mainMenu.setMenuName(rs.getString("MENUNAME"));
+				mainMenu.setMenuSeq(rs.getString("MENUSEQ"));
+				mainMenu.setMenuLvl(rs.getString("MENULVL"));
+				
+				maimMenuList.add(mainMenu);
+			}
+			
+			while(rs2.next()) {
+				
+				MenuListDAO subMenu = new MenuListDAO();
+				
+				subMenu.setMenuID(rs2.getString("MENUID"));
+				subMenu.setMenuName(rs2.getString("MENUNAME"));
+				subMenu.setMenuSeq(rs2.getString("MENUSEQ"));
+				subMenu.setMenuLvl(rs2.getString("MENULVL"));
+				subMenu.setParentID(rs2.getString("PARENTID"));
+				
+				subMenuList.add(subMenu);
+				
+			}
+			
+			request.setAttribute("maimMenuList", maimMenuList);
+			request.setAttribute("subMenuList", subMenuList);
+			request.getRequestDispatcher("/02_admin/menu_list.jsp").forward(request, response);
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doGet(req, resp);
+	}
+}
+
+-------------------------------
+---- memberListContoller
+
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import PKG_ADMIN_DAO.AuthListDAO;
+import PKG_ADMIN_DAO.MemberListDAO;
+import PKG_ADMIN_DAO.MenuListDAO;
+import oracle.jdbc.OracleTypes;
+
+@WebServlet("/Admin_MemList")
+public class memberListController extends HttpServlet 
+{
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String strMemberName = request.getParameter("memberName");
+		
+		Connection con = null;
+		
+		//권한리스트에 관련 데이터를 가져오자
+		try {
+			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "mngauth", "1");
+			
+			String strProcName = "{call PKG_AD_MEMBER.PROC_MEMBER_LIST(?,?,?)}";
+			CallableStatement csmt = con.prepareCall(strProcName);
+			csmt.setString(1, strMemberName);
+			csmt.registerOutParameter(2, OracleTypes.CURSOR);
+			csmt.registerOutParameter(3, OracleTypes.CURSOR);
+			
+			csmt.execute();
+			
+			
+			ResultSet rs = (ResultSet)csmt.getObject(2);  //MEMBERLIST
+			ResultSet rs2 = (ResultSet)csmt.getObject(3); //AUTHLIST
+			
+			ArrayList<MemberListDAO> memberLists = new ArrayList<MemberListDAO>();
+			ArrayList<AuthListDAO> authLists = new ArrayList<AuthListDAO>();
+			
+			while(rs.next()) {
+				MemberListDAO memberList = new MemberListDAO();
+				
+				memberList.setMID(rs.getString("MID"));
+				memberList.setMName(rs.getString("MNAME"));
+				memberList.setAuthID(rs.getString("AUTHID"));
+				memberList.setAuthName(rs.getString("AUTHNAME"));
+				
+				memberLists.add(memberList);
+				
+			}
+			
+			while(rs2.next()) {
+				
+				AuthListDAO authList = new AuthListDAO();
+				authList.setAuthID(rs2.getString("AUTHID"));
+				authList.setAuthName(rs2.getString("AUTHNAME"));
+				
+				authLists.add(authList);
+			}
+			
+			request.setAttribute("memberLists", memberLists);
+			request.setAttribute("authLists", authLists);
+			
+			request.getRequestDispatcher("/02_admin/member_list.jsp").forward(request, response);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+		
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doGet(req, resp);
+	}
+}
+---------------------------
+---memberDelController
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/Admin_DelMemberList")
+public class memberDelController extends HttpServlet 
+{
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		doPost(req, resp);
+	}
+	 
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String[] strMemberIDs = request.getParameterValues("chk");
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "mngauth", "1");
+		
+			String strProcName = "{call PKG_AD_MEMBER.PROC_MEMBER_DEL(?)}";
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			
+			
+			for(int i=0;i<strMemberIDs.length;i++) {
+				
+				csmt.setString(1, strMemberIDs[i]);
+				
+				csmt.execute();
+				
+			}
+			
+			con.close();
+			con = null;
+			
+			response.sendRedirect("/ServBoard/Admin_MemList");
+		
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		  catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+}
+------------------------------------------
+--authModController
+
+package PKG_ADMIN;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/Admin_ModAuthList")
+public class authModController extends HttpServlet 
+{
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		doGet(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		request.setCharacterEncoding("UTF-8");
+		
+		String[] strAuthIDs = request.getParameterValues("authid");
+		String[] strAuthNames = request.getParameterValues("authname");
+		String[] strGBN = request.getParameterValues("gbn");
+		
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "mngauth", "1");
+		
+			String strProcName = "{call PKG_AD_AUTH.PROC_AUTH_MOD(?,?,?)}";
+			
+			CallableStatement csmt = con.prepareCall(strProcName);
+			
+			
+			for(int i=0;i<strGBN.length;i++) {
+				
+				csmt.setString(1, strAuthIDs[i]);
+				csmt.setString(2, strAuthNames[i]);
+				csmt.setString(3, strGBN[i]);
+				
+				csmt.execute();
+				
+			}
+			
+			con.close();
+			con = null;
+			
+			response.sendRedirect("/ServBoard/Admin_AuthList");
+		
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		  catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+		
+		
+		
+		
+	}
+}
+
+
+-------------
+
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+  
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+
+<style>
+
+   span{
+   
+      display:block;
+      width:200px;
+      height:25px;
+      padding:8px 0px 0px 0px;
+      text-align:center;
+      border:1px solid #444;
+      float:left;
+   }
+
+   #list{
+      clear:both;
+   }
+</style>
+
+</head>
+<body>
+   <div id="">
+      
+      <div>
+      <form name="listForm" action="/SerBoard/BoardUpdate" method="post" id ="listForm">
+         <table border="1" cellpadding="0" cellspacing="0" width="600">
+         <tr>
+            <td width="50" height="30" align="center">
+               번호
+            </td>
+            <td width="350" height="30" align="center">
+               제목
+            </td>
+            <td width="150" height="30" align="center">
+               담당자
+            </td>
+         </tr>
+      
+         <tr>
+            <td width="50" height="30" align="center">
+            <input type="checkbox" name="chk" />
+            </td>
+            <td width="100" height="30" align="center">
+            </td>
+            <td width="350" height="30" align="center">
+            </td>
+         </tr>
+                  
+      </table>
+   </form>
+   </div>
+   
+      <div>
+         <input type="button" value="저장" />
+         <input type="button" value="삭제" />
+         <input type="button" value="글쓰기" />
+      </div>
+   </div>
+</body>
+</html>
